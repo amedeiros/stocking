@@ -5,4 +5,16 @@ from predicting import prophet
 from fbprophet.plot import plot_plotly  # This returns a plotly Figure
 import plotly.offline as py
 from trends import *
+from datetime import datetime, timedelta
+from IPython.core.display import display, HTML
+
 py.init_notebook_mode()
+
+
+def years_ago(years=1):
+    ago = datetime.now() - timedelta(days=years*365)
+    return ago.strftime("%Y-%m-%d")
+
+
+def today():
+    return datetime.now().strftime("%Y-%m-%d")

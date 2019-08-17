@@ -1,6 +1,7 @@
 import requests
 import os
 import pandas as pd
+from datetime import datetime
 
 
 class AlphaVantageClient:
@@ -23,20 +24,45 @@ class AlphaVantageClient:
 
         return self._frame_response(response, 'Time Series (%s)' % (interval))
 
-    def _url(self, function, outputsize):
-        return '%s/query?function=%s&symbol=%s&outputsize=%s&apikey=%s' % (
-            AlphaVantageClient.BASE_URL, function, self.ticker, outputsize, AlphaVantageClient.KEY)
+    def sma(self, interval='weekly', series_type='open', time_period='50'):
+        url = self._url(function='SMA') + '&series_type=' + \
+            series_type + '&time_period=' + time_period + '&interval=' + interval
+
+        response = requests.get(url)
+
+        data = {'dates': [], 'sma': []}
+
+        for k, v in response.json()['Technical Analysis: SMA'].items():
+            try:
+                data['dates'].append(datetime.strptime(k, "%Y-%m-%d"))
+                data['sma'].append(float(v['SMA']))
+            except Exception as ex:
+                next
+
+        df = pd.DataFrame(data=data)
+
+        return df
+
+    def _url(self, function, outputsize=None):
+        if outputsize:
+            return '%s/query?function=%s&symbol=%s&outputsize=%s&apikey=%s' % (
+                AlphaVantageClient.BASE_URL, function, self.ticker, outputsize, AlphaVantageClient.KEY)
+
+        return '%s/query?function=%s&symbol=%s&apikey=%s' % (
+            AlphaVantageClient.BASE_URL, function, self.ticker, AlphaVantageClient.KEY)
 
     def _frame_response(self, response, primary_key):
         data = {'dates': [], 'open': [], 'close': [],
                 'high': [], 'low': [], 'volume': []}
 
         for k, v in response.json()[primary_key].items():
-            data['dates'].append(k)
+            data['dates'].append(datetime.strptime(k, "%Y-%m-%d"))
             data['close'].append(float(v['4. close']))
             data['open'].append(float(v['1. open']))
             data['high'].append(float(v['2. high']))
             data['low'].append(float(v['3. low']))
             data['volume'].append(float(v['5. volume']))
 
-        return pd.DataFrame(data=data)
+        df = pd.DataFrame(data=data)
+
+        return df
