@@ -18,3 +18,7 @@ def years_ago(years=1):
 
 def today():
     return datetime.now().strftime("%Y-%m-%d")
+
+
+def calc_sma(df, window, min_periods=1):
+    return df.rolling(window=window, min_periods=min_periods).mean()

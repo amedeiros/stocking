@@ -5,3 +5,4 @@ plotly==4.1.0
 fbprophet==0.5
 jupyterlab==1.0.2
 pytrends==4.6.0
+nest_asyncio==1.1.0
