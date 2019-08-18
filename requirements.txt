@@ -1,0 +1,7 @@
+pandas==0.23.4
+requests==2.22.0
+finviz==1.2.3
+plotly==4.1.0
+fbprophet==0.5
+jupyterlab==1.0.2
+pytrends==4.6.0
