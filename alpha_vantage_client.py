@@ -24,7 +24,7 @@ class AlphaVantageClient:
 
         return self._frame_response(response, 'Time Series (%s)' % (interval))
 
-    def sma(self, interval='weekly', series_type='open', time_period='50'):
+    def sma(self, interval='daily', series_type='open', time_period='50'):
         url = self._url(function='SMA') + '&series_type=' + \
             series_type + '&time_period=' + time_period + '&interval=' + interval
 

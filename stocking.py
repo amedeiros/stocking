@@ -7,6 +7,7 @@ import plotly.offline as py
 from trends import *
 from datetime import datetime, timedelta
 from IPython.core.display import display, HTML
+import pandas as pd
 
 py.init_notebook_mode()
 
@@ -20,5 +21,23 @@ def today():
     return datetime.now().strftime("%Y-%m-%d")
 
 
-def calc_sma(df, window, min_periods=1):
-    return df.rolling(window=window, min_periods=min_periods).mean()
+def postion_sizing(risk, price, stop, exit=1):
+    max_loss_per_share = price - stop
+    position_size = _round_down(risk / max_loss_per_share)
+    max_gain = position_size * exit
+    total_risk = position_size * max_loss_per_share
+    cost = position_size * price
+    df = pd.DataFrame({
+        'position_size': [position_size],
+        'max_loss_per_share': [max_loss_per_share],
+        'total_risk': [total_risk],
+        'total_gain': [max_gain],
+        'profit': [max_gain - cost],
+        'purchase_cost': [cost],
+        'risk_reward_ratio': [((max_gain / total_risk) * 100) / 100]})
+
+    return df
+
+
+def _round_down(num, divisor=10):
+    return num - (num % divisor)
