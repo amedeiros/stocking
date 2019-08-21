@@ -1,7 +1,5 @@
 import plotly.graph_objects as go
 import plotly.express as px
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 
 
 def candlestick_plot(df):
@@ -25,13 +23,37 @@ def line_chart_trends(df):
 
 
 def golden_cross(start, stop, df, sma_50, sma_200, ticker):
-    fig, ax = plt.subplots(figsize=(16, 9))
-    ax.plot(df.loc[start:stop, :].index,
-            df.loc[start:stop, 'open'], label='price')
-    ax.plot(sma_200.loc[start:stop, :].index,
-            sma_200.loc[start:stop, 'sma'], label='200-days SMA')
-    ax.plot(sma_50.loc[start:stop, :].index,
-            sma_50.loc[start:stop, 'sma'], label='50-days SMA')
-    ax.set_ylabel(ticker + ' Price in $')
-    ax.legend(loc='best')
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=df.loc[start:stop, :].index, y=df.loc[start:stop, 'open'], name='price'))
+
+    fig.add_trace(go.Scatter(
+        x=sma_200.loc[start:stop, :].index, y=sma_200.loc[start:stop, 'sma'], name='SMA-200'))
+    fig.add_trace(go.Scatter(
+        x=sma_50.loc[start:stop, :].index, y=sma_50.loc[start:stop, 'sma'], name='SMA-50'))
+
+    fig.update_layout(title_text=ticker, xaxis_rangeslider_visible=True)
+
+    return fig
+
+
+def predicted_golden_cross(start, stop, price, predicted_price, sma_50, predicted_50, sma_200, predicted_200, ticker):
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=price.loc[start:stop, :].index, y=price.loc[start:stop, 'open'], name="price"))
+    fig.add_trace(go.Scatter(x=predicted_price.loc[start:stop, :].index,
+                             y=predicted_price.loc[start:stop, 'yhat'], name="predicted price"))
+
+    fig.add_trace(go.Scatter(x=predicted_50.loc[start:stop, :].index,
+                             y=predicted_50.loc[start:stop, 'yhat'], name='Predicted SMA-50'))
+    fig.add_trace(go.Scatter(x=predicted_200.loc[start:stop, :].index,
+                             y=predicted_200.loc[start:stop, 'yhat'], name='Predicted SMA-200'))
+
+    fig.add_trace(go.Scatter(
+        x=sma_50.loc[start:stop, :].index, y=sma_50.loc[start:stop, 'sma'], name='SMA-50'))
+    fig.add_trace(go.Scatter(
+        x=sma_200.loc[start:stop, :].index, y=sma_200.loc[start:stop, 'sma'], name='SMA-200'))
+
+    fig.update_layout(title_text=ticker, xaxis_rangeslider_visible=True)
+
     return fig

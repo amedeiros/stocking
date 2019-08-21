@@ -21,20 +21,27 @@ def today():
     return datetime.now().strftime("%Y-%m-%d")
 
 
+def years_from_now(years=1):
+    future = datetime.now() + timedelta(days=years*365)
+    return future.strftime("%Y-%m-%d")
+
+
 def postion_sizing(risk, price, stop, exit=1):
     max_loss_per_share = price - stop
     position_size = _round_down(risk / max_loss_per_share)
     max_gain = position_size * exit
     total_risk = position_size * max_loss_per_share
     cost = position_size * price
+    profit = max_gain - cost
+    risk_reward_ratio = ((profit / total_risk) * 100) / 100
     df = pd.DataFrame({
         'position_size': [position_size],
         'max_loss_per_share': [max_loss_per_share],
         'total_risk': [total_risk],
         'total_gain': [max_gain],
-        'profit': [max_gain - cost],
+        'profit': [profit],
         'purchase_cost': [cost],
-        'risk_reward_ratio': [((max_gain / total_risk) * 100) / 100]})
+        'risk_reward_ratio': [risk_reward_ratio]})
 
     return df
 
