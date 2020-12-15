@@ -2,5 +2,7 @@ forecasts/*.csv
 __pycache__/
 .ipynb_checkpoints/
 *.pyc
-
+*.env
+.vscode/
 barchart_client.py
+templates/*.html
