@@ -1,6 +1,36 @@
 version: '3'
 services:
-  bot:
+  dev: &dev
     build: .
-    command: ["python", "run.py"]
+    command: ["bash"]
     env_file: bot-variables.env
+    volumes:
+      - .:/usr/src/app
+  bot:
+    <<: *dev
+    command: ["python", "run.py"]
+  worker-ui:
+    <<: *dev
+    command: ["flower","-A", "worker_app", "--address=0.0.0.0", "--broker=redis://redis:6379/0"]
+    depends_on:
+      - redis
+    ports:
+      - 5555:5555
+    networks:
+      - stocking
+  workers:
+    <<: *dev
+    command: ["celery", "-A", "worker_app", "worker", "-l", "INFO"]
+    depends_on:
+      - worker-ui
+      - redis
+    networks:
+      - stocking
+  redis:
+    image: "redis"
+    ports:
+      - 6379:6379
+    networks:
+      - stocking
+networks:
+  stocking:

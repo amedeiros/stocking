@@ -19,10 +19,15 @@ def main():
     bot = Bot()
     bot.run()
 
+
 @respond_to("ticker (.*)", re.IGNORECASE)
 def ticker(message, ticker):
-    msg = stocking.overview(ticker)
-    message.reply(_wrap_ticks(msg))
+    df = stocking.company_overview(ticker)
+    _store_html(df.to_html(classes='table table-striped'),
+                f"{ticker}_overview.html")
+    message.send_webapi('', json.dumps(
+        _attachments(message, text=df["Description"][0], title=f"Overview for {ticker}", title_link=_html_url(f"{ticker}_overview.html"))))
+
 
 @respond_to("ticker-top5 (.*)", re.IGNORECASE)
 def ticker_top(message, ticker):
@@ -32,56 +37,77 @@ def ticker_top(message, ticker):
 
 @respond_to("screener (.*)", re.IGNORECASE)
 def screener(message, filters):
-    filters = filters.split(",")
-    df = stocking.screener(filters=filters)
-    message.reply(_wrap_ticks_tabluate(df))
+    df = stocking.screener(filters=filters.split(","))
+    filename = f"{filters.replace(',', '_')}screener.html"
+    _store_html(df.to_html(classes='table table-striped'), filename)
+    message.send_webapi('', json.dumps(
+        _attachments(message, title=f"FinViz Screener Results", title_link=_html_url(filename))))
 
 
 @respond_to("ticker-performance (.*)", re.IGNORECASE)
 def ticker_performance(message, ticker):
     df = stocking.finviz_performance(ticker=ticker)
-    message.reply(_wrap_ticks_tabluate(df))
+    filename = f"{ticker}_performance.html"
+    _store_html(df.to_html(classes="table table-striped"), filename)
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Performance for {ticker}", title_link=_html_url(filename))))
 
 
 @respond_to("ticker-overview (.*)", re.IGNORECASE)
 def ticker_overview(message, ticker):
     df = stocking.finviz_overview(ticker=ticker)
-    message.reply(_wrap_ticks_tabluate(df))
+    filename = f"{ticker}_overview.html"
+    _store_html(df.to_html(classes="table table-striped"), filename)
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Overview for {ticker}", title_link=_html_url(filename))))
 
 
 @respond_to("ticker-technical (.*)", re.IGNORECASE)
 def ticker_technical(message, ticker):
     df = stocking.finviz_technical(ticker=ticker)
-    message.reply(_wrap_ticks_tabluate(df))
+    filename = f"{ticker}_technical.html"
+    _store_html(df.to_html(classes="table table-striped"), filename)
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Technical for {ticker}", title_link=_html_url(filename))))
 
 
 @respond_to("ticker-ownership (.*)", re.IGNORECASE)
 def ticker_ownership(message, ticker):
     df = stocking.finviz_ownership(ticker=ticker)
-    message.reply(_wrap_ticks_tabluate(df))
+    filename = f"{ticker}_ownership.html"
+    _store_html(df.to_html(classes="table table-striped"), filename)
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Ownership for {ticker}", title_link=_html_url(filename))))
 
 
 @respond_to("ticker-financial (.*)", re.IGNORECASE)
 def ticker_financial(message, ticker):
     df = stocking.finviz_financial(ticker=ticker)
-    message.reply(_wrap_ticks_tabluate(df))
+    _store_html(df.to_html(classes='table table-striped'),
+                f"{ticker}_financial.html")
+
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Financials for {ticker}", title_link=_html_url(f"{ticker}_financial.html"))))
 
 
 @respond_to("insider (.*)", re.IGNORECASE)
 def insider(message, ticker):
     insider = stocking.finviz_get_insider(ticker)
-    df = pandas.DataFrame(insider).head(10)
-    ticks = _wrap_ticks_tabluate(df)
-    message.reply(ticks)
+    df = pandas.DataFrame(insider)
+    filename = f"{ticker}_insider.html"
+    _store_html(df.to_html(classes="table table-striped"), filename)
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Insider for {ticker}", title_link=_html_url(filename))))
 
 
 @respond_to("candlestick (.*)", re.IGNORECASE)
-def candlestick(message, ticker):
+def candlestick(message, ticker, interval="60min"):
     _processing(message)
-    time_series = stocking.time_series_daily(ticker)
+    time_series = stocking.time_series_intraday(ticker, interval=interval)
     fig = candlestick_plot(time_series)
     _store_graph(fig, "%s_candlestick.html" % ticker)
-    message.reply(_graph_url("%s_candlestick.html" % ticker))
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Candlestick Chart For {ticker}", title_link=_html_url("%s_candlestick.html" % ticker))))
 
 
 @respond_to("news (.*)", re.IGNORECASE)
@@ -98,48 +124,54 @@ def compact_news(message, ticker):
 
 @respond_to("interest-over-time (.*)", re.IGNORECASE)
 def interest_over_time(message, ticker):
+    _processing(message)
     interest = stocking.interest_over_time(ticker)
-    df = pandas.DataFrame(interest).head(10)
-    message.reply(_wrap_ticks_tabluate(df))
+    df = pandas.DataFrame(interest)
+    fig = stocking.line_chart_trends(df)
+    filename = f"{ticker}_interest_over_time.html"
+    _store_graph(fig, filename)
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Interest Over Time: {ticker}", title_link=_html_url(filename))))
 
 
 @respond_to("sector-performance", re.IGNORECASE)
 def sector_performance(message):
-    df = stocking.sector_performance().head(10)
-    message.reply(_wrap_ticks_tabluate(df))
-
-
-@respond_to("prophet (.*)", re.IGNORECASE)
-def prophet(message, ticker):
     _processing(message)
-    time_series = stocking.time_series_daily(ticker)
-    prophet = stocking.prophet(time_series, "open")
-    future = prophet.make_future_dataframe(periods=365)
-    forecast = prophet.predict(future)
-    date = stocking.today()
-    forecast.to_csv("./forecasts/" + ticker + "-" + date + "-forecast.csv")
-    fig = stocking.plot_plotly(prophet, forecast)
-    _store_graph(fig, "%s_prophet.html" % ticker)
-    message.reply(_graph_url("%s_prophet.html" % ticker))
+    df = stocking.sector_performance()
+    fig = stocking.sector_performance_chart(df)
+    _store_graph(fig, "sector_performance.html")
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Sector Performance", title_link=_html_url("sector_performance.html"))))
 
 
 @respond_to("golden-cross (.*)", re.IGNORECASE)
 def golden_cross(message, ticker):
     _processing(message)
     time_series = stocking.time_series_daily(ticker)
-    df = time_series.set_index("dates")
-    sma_50 = stocking.sma(ticker).set_index("dates")
-    sma_200 = stocking.sma(ticker, time_period="200").set_index("dates")
+    sma_50 = stocking.sma(ticker)
+    sma_200 = stocking.sma(ticker, time_period="200")
     fig = stocking.golden_cross(
         start=stocking.today(),
         stop=stocking.years_ago(),
-        df=df,
+        df=time_series,
         sma_50=sma_50,
         sma_200=sma_200,
         ticker=ticker,
     )
-    _store_graph(fig, "%s_golden_cross.html" % ticker)
-    message.reply(_graph_url("%s_golden_cross.html" % ticker))
+    _store_graph(fig, f"{ticker}_golden_cross.html")
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"Golden Cross Chart For {ticker}", title_link=_html_url(f"{ticker}_golden_cross.html"))))
+
+
+@respond_to("sma (.*)", re.IGNORECASE)
+def sma(message, ticker):
+    _processing(message)
+    sma = stocking.sma(ticker)
+    fig = stocking.plot_sma(sma)
+    filename = f"{ticker}_sma.html"
+    _store_graph(fig, filename)
+    message.send_webapi('', json.dumps(_attachments(
+        message, title=f"SMA Chart For {ticker}", title_link=_html_url(filename))))
 
 
 @respond_to("help", re.IGNORECASE)
@@ -151,6 +183,7 @@ Stocking bot help (%s)
     @stockbot ticker TICKER (AlphaVantage Overview)
     @stockbot news TICKER (Returns news from FinViz as individual messages of URL's to unfurl)
     @stockbot news-compact TICKER (Returns news from FinViz as one message results in no unfurling)
+    @stockbot interest-over-time TICKER (Chart news interest over time)
     @stockbot ticker-top5 TICKER (Returns last five days of open, close, high, low and volume)
     @stockbot candlestick TICKER (Link to a candlestick chart for the supplied ticker)
     @stockbot screener FILTERS (Finviz screener comma seperated filters EX: @stockbot screener exch_nasd,geo_usa,sh_price_u5,ta_sma50_cross200a)
@@ -161,12 +194,25 @@ Stocking bot help (%s)
     @stockbot ticker-financial TICKER (Finviz financial table)
     @stockbot insider TICKER (List last 10 insider trades)
     @stockbot sector-performance (Get back sector performance)
+    @stockbot sma TICKER (Chart of the simple moving average)
     @stockbot golden-cross TICKER (50SMA cross over the 200SMA)
-    @stockbot prophet TICKER (facebooks prophet forecasting algorithm)
     """
         % BOT_ENV
     )
     message.reply(_wrap_ticks(response))
+
+
+def _attachments(message, title, title_link, footer="Stocking Bot 0.1b", text=None, fields=[]):
+    return [
+        {
+            'author_name': message.user["profile"]["real_name"],
+            'title_link': title_link,
+            'title': title,
+            'color': f"#{message.user['color']}",
+            'text': text,
+            'footer': footer,
+            "fields":fields,
+        }]
 
 
 def _wrap_ticks(message):
@@ -189,7 +235,7 @@ def _processing(message):
     message.reply("Processing...")
 
 
-def _graph_url(name, bucket="stocks-am"):
+def _html_url(name, bucket="stocks-am"):
     return boto3.client("s3").generate_presigned_url(
         ClientMethod="get_object",
         Params={
@@ -198,6 +244,17 @@ def _graph_url(name, bucket="stocks-am"):
             "ResponseContentType": "text/html",
         },
     )
+
+
+def _store_html(html, name, bucket="stocks-am"):
+    f = open("templates/%s" % name, "w")
+    f.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">\n')
+    f.write('<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>\n')
+    f.write('<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>\n')
+    f.write(html)
+    f.close()
+    s3 = boto3.resource("s3")
+    s3.Object(bucket, name).put(Body=open("templates/%s" % name, "rb"))
 
 
 def _store_graph(fig, name, bucket="stocks-am"):

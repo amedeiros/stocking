@@ -2,17 +2,16 @@ from dataclasses import dataclass
 from datetime import datetime, timedelta
 
 import pandas as pd
-import plotly.offline as py
-from fbprophet.plot import plot_plotly  # This returns a plotly Figure
-from IPython.core.display import HTML, display
+# import plotly.offline as py
+# from fbprophet.plot import plot_plotly  # This returns a plotly Figure
+# from IPython.core.display import HTML, display
 
 from alpha_vantage_client import *
 from charting import *
 from finviz_client import *
-from predicting import prophet
 from trends import *
 
-py.init_notebook_mode()
+# py.init_notebook_mode()
 
 
 @dataclass

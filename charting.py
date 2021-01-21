@@ -3,14 +3,22 @@ import plotly.graph_objects as go
 
 
 def candlestick_plot(df):
+    fig = go.Figure()
     fig = go.Figure(
         data=[
             go.Candlestick(
-                x=df["dates"],
-                open=df["open"],
-                high=df["high"],
-                low=df["low"],
-                close=df["close"],
+                x=list(df.index),
+                open=df["1. open"],
+                high=df["2. high"],
+                low=df["3. low"],
+                close=df["4. close"],
+                name="Candlestick",
+            ),
+            go.Scatter(
+                x=list(df.index),
+                y=df["5. volume"],
+                name="Volume",
+                mode="lines",
             )
         ]
     )
@@ -23,31 +31,60 @@ def line_chart_trends(df):
     for column in df.columns:
         if column != "isPartial":
             fig.add_trace(
-                go.Scatter(x=df.index, y=df[column], mode="lines+markers", name=column)
+                go.Scatter(x=df.index, y=df[column],
+                           mode="lines+markers", name=column)
             )
 
     return fig
 
 
+def plot_sma(df):
+    fig = go.Figure(data=[
+        go.Scatter(
+            x=list(df.index),
+            y=df["SMA"],
+            name="SMA",
+            mode="lines",
+        )
+    ])
+
+    return fig
+
+
+def sector_performance_chart(df):
+    fig = go.Figure(data=[
+        go.Bar(x=list(df.index), y=df["Rank A: Real-Time Performance"])
+    ])
+
+    fig.update_layout(legend_title_text="Sector")
+    fig.update_xaxes(title_text="Sectors")
+    fig.update_yaxes(title_text="Rank A: Real-Time Performance")
+
+    return fig
+
+
 def golden_cross(start, stop, df, sma_50, sma_200, ticker):
+    sma_200 = sma_200.sort_values(by="date", ascending=False)
+    sma_50 = sma_50.sort_values(by="date", ascending=False)
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
-            x=df.loc[start:stop, :].index, y=df.loc[start:stop, "open"], name="price"
+            x=df.loc[start:stop, :].index, y=df.loc[start:stop,
+                                                    "1. open"], name="price"
         )
     )
 
     fig.add_trace(
         go.Scatter(
             x=sma_200.loc[start:stop, :].index,
-            y=sma_200.loc[start:stop, "sma"],
+            y=sma_200.loc[start:stop, "SMA"],
             name="SMA-200",
         )
     )
     fig.add_trace(
         go.Scatter(
             x=sma_50.loc[start:stop, :].index,
-            y=sma_50.loc[start:stop, "sma"],
+            y=sma_50.loc[start:stop, "SMA"],
             name="SMA-50",
         )
     )

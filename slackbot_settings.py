@@ -9,3 +9,4 @@ PLUGINS = [
 
 
 BOT_ENV = os.environ.get("BOT_EMV") or "development"
+ERRORS_TO = "errors"
