@@ -2,6 +2,8 @@ FROM python:3.7
 
 WORKDIR /usr/src/app
 
+ENV PYTHONPATH /usr/src/app
+
 RUN apt update
 RUN apt upgrade -y
 RUN apt install build-essential -y

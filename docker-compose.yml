@@ -8,7 +8,7 @@ services:
       - .:/usr/src/app
   bot:
     <<: *dev
-    command: ["python", "run.py"]
+    command: ["python", "./algo_bot/run.py"]
   worker-ui:
     <<: *dev
     command: ["flower","-A", "worker_app", "--address=0.0.0.0", "--broker=redis://redis:6379/0"]

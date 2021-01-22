@@ -4,7 +4,11 @@ DEFAULT_REPLY = "Sorry but I didn't understand you"
 
 PLUGINS = [
     "slackbot.plugins",
-    # 'mybot.plugins',
+    "algo_bot.commands.finviz",
+    "algo_bot.commands.help",
+    "algo_bot.commands.news",
+    "algo_bot.commands.technical",
+    "algo_bot.commands.ticker",
 ]
 
 
