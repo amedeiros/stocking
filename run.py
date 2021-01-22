@@ -8,10 +8,10 @@ import plotly
 from slackbot.bot import Bot, respond_to
 from tabulate import tabulate
 
-import stocking
-from charting import candlestick_plot
-from finviz_client import finviz_get_news
 from slackbot_settings import *
+from algo_bot.clients import finviz_client, alpha_vantage_client, trends
+import charting
+import stocking
 
 
 def main():
@@ -22,7 +22,7 @@ def main():
 
 @respond_to("ticker (.*)", re.IGNORECASE)
 def ticker(message, ticker):
-    df = stocking.company_overview(ticker)
+    df = alpha_vantage_client.company_overview(ticker)
     _store_html(df.to_html(classes='table table-striped'),
                 f"{ticker}_overview.html")
     message.send_webapi('', json.dumps(
@@ -31,13 +31,13 @@ def ticker(message, ticker):
 
 @respond_to("ticker-top5 (.*)", re.IGNORECASE)
 def ticker_top(message, ticker):
-    df = stocking.time_series_daily(ticker).head()
+    df = alpha_vantage_client.time_series_daily(ticker).head()
     message.reply(_wrap_ticks_tabluate(df))
 
 
 @respond_to("screener (.*)", re.IGNORECASE)
 def screener(message, filters):
-    df = stocking.screener(filters=filters.split(","))
+    df = finviz_client.screener(filters=filters.split(","))
     filename = f"{filters.replace(',', '_')}screener.html"
     _store_html(df.to_html(classes='table table-striped'), filename)
     message.send_webapi('', json.dumps(
@@ -46,7 +46,7 @@ def screener(message, filters):
 
 @respond_to("ticker-performance (.*)", re.IGNORECASE)
 def ticker_performance(message, ticker):
-    df = stocking.finviz_performance(ticker=ticker)
+    df = finviz_client.finviz_performance(ticker=ticker)
     filename = f"{ticker}_performance.html"
     _store_html(df.to_html(classes="table table-striped"), filename)
     message.send_webapi('', json.dumps(_attachments(
@@ -55,7 +55,7 @@ def ticker_performance(message, ticker):
 
 @respond_to("ticker-overview (.*)", re.IGNORECASE)
 def ticker_overview(message, ticker):
-    df = stocking.finviz_overview(ticker=ticker)
+    df = finviz_client.finviz_overview(ticker=ticker)
     filename = f"{ticker}_overview.html"
     _store_html(df.to_html(classes="table table-striped"), filename)
     message.send_webapi('', json.dumps(_attachments(
@@ -64,7 +64,7 @@ def ticker_overview(message, ticker):
 
 @respond_to("ticker-technical (.*)", re.IGNORECASE)
 def ticker_technical(message, ticker):
-    df = stocking.finviz_technical(ticker=ticker)
+    df = finviz_client.finviz_technical(ticker=ticker)
     filename = f"{ticker}_technical.html"
     _store_html(df.to_html(classes="table table-striped"), filename)
     message.send_webapi('', json.dumps(_attachments(
@@ -73,7 +73,7 @@ def ticker_technical(message, ticker):
 
 @respond_to("ticker-ownership (.*)", re.IGNORECASE)
 def ticker_ownership(message, ticker):
-    df = stocking.finviz_ownership(ticker=ticker)
+    df = finviz_client.finviz_ownership(ticker=ticker)
     filename = f"{ticker}_ownership.html"
     _store_html(df.to_html(classes="table table-striped"), filename)
     message.send_webapi('', json.dumps(_attachments(
@@ -82,7 +82,7 @@ def ticker_ownership(message, ticker):
 
 @respond_to("ticker-financial (.*)", re.IGNORECASE)
 def ticker_financial(message, ticker):
-    df = stocking.finviz_financial(ticker=ticker)
+    df = finviz_client.finviz_financial(ticker=ticker)
     _store_html(df.to_html(classes='table table-striped'),
                 f"{ticker}_financial.html")
 
@@ -92,7 +92,7 @@ def ticker_financial(message, ticker):
 
 @respond_to("insider (.*)", re.IGNORECASE)
 def insider(message, ticker):
-    insider = stocking.finviz_get_insider(ticker)
+    insider = finviz_client.finviz_get_insider(ticker)
     df = pandas.DataFrame(insider)
     filename = f"{ticker}_insider.html"
     _store_html(df.to_html(classes="table table-striped"), filename)
@@ -103,8 +103,9 @@ def insider(message, ticker):
 @respond_to("candlestick (.*)", re.IGNORECASE)
 def candlestick(message, ticker, interval="60min"):
     _processing(message)
-    time_series = stocking.time_series_intraday(ticker, interval=interval)
-    fig = candlestick_plot(time_series)
+    time_series = alpha_vantage_client.time_series_intraday(
+        ticker, interval=interval)
+    fig = charting.candlestick_plot(time_series)
     _store_graph(fig, "%s_candlestick.html" % ticker)
     message.send_webapi('', json.dumps(_attachments(
         message, title=f"Candlestick Chart For {ticker}", title_link=_html_url("%s_candlestick.html" % ticker))))
@@ -125,9 +126,9 @@ def compact_news(message, ticker):
 @respond_to("interest-over-time (.*)", re.IGNORECASE)
 def interest_over_time(message, ticker):
     _processing(message)
-    interest = stocking.interest_over_time(ticker)
+    interest = trends.interest_over_time(ticker)
     df = pandas.DataFrame(interest)
-    fig = stocking.line_chart_trends(df)
+    fig = charting.line_chart_trends(df)
     filename = f"{ticker}_interest_over_time.html"
     _store_graph(fig, filename)
     message.send_webapi('', json.dumps(_attachments(
@@ -137,8 +138,8 @@ def interest_over_time(message, ticker):
 @respond_to("sector-performance", re.IGNORECASE)
 def sector_performance(message):
     _processing(message)
-    df = stocking.sector_performance()
-    fig = stocking.sector_performance_chart(df)
+    df = alpha_vantage_client.sector_performance()
+    fig = charting.sector_performance_chart(df)
     _store_graph(fig, "sector_performance.html")
     message.send_webapi('', json.dumps(_attachments(
         message, title=f"Sector Performance", title_link=_html_url("sector_performance.html"))))
@@ -147,10 +148,10 @@ def sector_performance(message):
 @respond_to("golden-cross (.*)", re.IGNORECASE)
 def golden_cross(message, ticker):
     _processing(message)
-    time_series = stocking.time_series_daily(ticker)
-    sma_50 = stocking.sma(ticker)
-    sma_200 = stocking.sma(ticker, time_period="200")
-    fig = stocking.golden_cross(
+    time_series = alpha_vantage_client.time_series_daily(ticker)
+    sma_50 = alpha_vantage_client.sma(ticker)
+    sma_200 = alpha_vantage_client.sma(ticker, time_period="200")
+    fig = charting.golden_cross(
         start=stocking.today(),
         stop=stocking.years_ago(),
         df=time_series,
@@ -166,8 +167,8 @@ def golden_cross(message, ticker):
 @respond_to("sma (.*)", re.IGNORECASE)
 def sma(message, ticker):
     _processing(message)
-    sma = stocking.sma(ticker)
-    fig = stocking.plot_sma(sma)
+    sma = alpha_vantage_client.sma(ticker)
+    fig = charting.plot_sma(sma)
     filename = f"{ticker}_sma.html"
     _store_graph(fig, filename)
     message.send_webapi('', json.dumps(_attachments(
@@ -225,7 +226,7 @@ def _wrap_ticks_tabluate(df, headers="keys", tablefmt="pipe"):
 
 def _get_news_urls(ticker):
     urls = []
-    table = finviz_get_news(ticker)
+    table = finviz_client.finviz_get_news(ticker)
     for _, url in table.head().iterrows():
         urls.append(url["Link"])
     return urls
