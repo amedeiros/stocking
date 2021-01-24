@@ -1,4 +1,7 @@
 import os
+from algo_bot.settings import get_settings, AlgoBotSettings
+
+settings = get_settings()
 
 DEFAULT_REPLY = "Sorry but I didn't understand you"
 
@@ -13,5 +16,5 @@ PLUGINS = [
 ]
 
 
-BOT_ENV = os.environ.get("BOT_EMV") or "development"
+BOT_ENV = settings.bot_env
 ERRORS_TO = "errors"
