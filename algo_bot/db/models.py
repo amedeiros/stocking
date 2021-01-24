@@ -1,6 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker
+from sqlalchemy.orm import scoped_session, sessionmaker, relationship
 from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
 
 from algo_bot.settings import AlgoBotSettings, get_settings
@@ -17,11 +17,20 @@ class BaseModel(Base, AllFeaturesMixin, TimestampsMixin):
 
 class User(BaseModel):
     __tablename__ = "users"
-    email = sa.Column(sa.NVARCHAR(200), nullable=False)
-    slack = sa.Column(sa.NVARCHAR(200), nullable=True)
+    email = sa.Column(sa.NVARCHAR(200), nullable=False, unique=True)
+    slack = sa.Column(sa.NVARCHAR(200), nullable=False, unique=True)
     first_name = sa.Column(sa.NVARCHAR(100), nullable=False)
     last_name = sa.Column(sa.NVARCHAR(100), nullable=False)
     timezone = sa.Column(sa.NVARCHAR(200), nullable=True)
+    screeners = relationship("Screener")
+
+class Screener(BaseModel):
+    __tablename__ = "screeners"
+    user_id = sa.Column(sa.BIGINT, sa.ForeignKey(f"{settings.db_name}.users.id"), nullable=False)
+    user = relationship("User", back_populates="screeners")
+    filters = sa.Column(sa.NVARCHAR(1000), nullable=False)
+    name = sa.Column(sa.NVARCHAR(200), nullable=False, unique=True)
+    cron = sa.Column(sa.NVARCHAR(100), nullable=True)
 
 
 # DB Connection setup
