@@ -1,7 +1,3 @@
-import asyncio
-import json
-import re
-
 from slackbot.bot import Bot
 
 

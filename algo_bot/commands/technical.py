@@ -19,7 +19,7 @@ def sector_performance(message):
         json.dumps(
             utils.attachments(
                 message,
-                title=f"Sector Performance",
+                title="Sector Performance",
                 title_link=utils.html_url("sector_performance.html"),
             )
         ),

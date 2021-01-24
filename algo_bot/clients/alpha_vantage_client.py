@@ -1,8 +1,5 @@
 import os
-from datetime import datetime
 
-import pandas as pd
-import requests
 from alpha_vantage.fundamentaldata import FundamentalData
 from alpha_vantage.sectorperformance import SectorPerformances
 from alpha_vantage.techindicators import TechIndicators

@@ -1,9 +1,7 @@
-import json
 import re
 
 from slackbot.bot import respond_to
 
-from algo_bot.commands import utils
 from algo_bot.db.models import User
 
 
@@ -23,6 +21,5 @@ def register(message, email=None, first_name=None, last_name=None):
                 last_name=last_name,
             )
             message.reply("Success!")
-        except:
+        except Exception:
             message.reply("Failed!")
-            breakpoint()

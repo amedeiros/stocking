@@ -18,7 +18,7 @@ def screener(message, filters):
         json.dumps(
             utils.attachments(
                 message,
-                title=f"FinViz Screener Results",
+                title="FinViz Screener Results",
                 title_link=utils.html_url(filename),
             )
         ),
