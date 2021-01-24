@@ -9,8 +9,7 @@ nest_asyncio.apply()
 
 
 def screener(
-    filters=["exch_nasd", "sh_avgvol_o200",
-             "sh_price_u5", "ta_change_u10", "geo_usa"],
+    filters=["exch_nasd", "sh_avgvol_o200", "sh_price_u5", "ta_change_u10", "geo_usa"],
     order="-volume",
 ):
     loop = asyncio.new_event_loop()

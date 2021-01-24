@@ -9,6 +9,7 @@ PLUGINS = [
     "algo_bot.commands.news",
     "algo_bot.commands.technical",
     "algo_bot.commands.ticker",
+    "algo_bot.commands.user",
 ]
 
 

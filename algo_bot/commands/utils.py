@@ -1,9 +1,11 @@
-import boto3
-import plotly
 import os
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+
+import boto3
+import plotly
 from tabulate import tabulate
+
 from algo_bot.slackbot_settings import BOT_ENV
 
 
@@ -18,17 +20,20 @@ class Positioning:
     risk_reward_ratio: float
 
 
-def attachments(message, title, title_link, footer="Stocking Bot 0.1b", text=None, fields=[]):
+def attachments(
+    message, title, title_link, footer="Stocking Bot 0.1b", text=None, fields=[]
+):
     return [
         {
-            'author_name': message.user["profile"]["real_name"],
-            'title_link': title_link,
-            'title': title,
-            'color': f"#{message.user['color']}",
-            'text': text,
-            'footer': footer,
-            "fields":fields,
-        }]
+            "author_name": message.user["profile"]["real_name"],
+            "title_link": title_link,
+            "title": title,
+            "color": f"#{message.user['color']}",
+            "text": text,
+            "footer": footer,
+            "fields": fields,
+        }
+    ]
 
 
 def wrap_ticks(message):
@@ -56,9 +61,15 @@ def html_url(name, bucket="stocks-am"):
 
 def store_html(html, name, bucket="stocks-am"):
     f = open("templates/%s" % name, "w")
-    f.write('<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">\n')
-    f.write('<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>\n')
-    f.write('<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>\n')
+    f.write(
+        '<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css">\n'
+    )
+    f.write(
+        '<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>\n'
+    )
+    f.write(
+        '<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js"></script>\n'
+    )
     f.write(html)
     f.close()
     s3 = boto3.resource("s3")

@@ -1,9 +1,11 @@
-import re
 import json
+import re
+
 from slackbot.bot import respond_to
-from algo_bot.commands import utils
-from algo_bot.clients import alpha_vantage_client
+
 from algo_bot import charting
+from algo_bot.clients import alpha_vantage_client
+from algo_bot.commands import utils
 
 
 @respond_to("sector-performance", re.IGNORECASE)
@@ -12,8 +14,16 @@ def sector_performance(message):
     df = alpha_vantage_client.sector_performance()
     fig = charting.sector_performance_chart(df)
     utils.store_graph(fig, "sector_performance.html")
-    message.send_webapi('', json.dumps(utils.attachments(
-        message, title=f"Sector Performance", title_link=utils.html_url("sector_performance.html"))))
+    message.send_webapi(
+        "",
+        json.dumps(
+            utils.attachments(
+                message,
+                title=f"Sector Performance",
+                title_link=utils.html_url("sector_performance.html"),
+            )
+        ),
+    )
 
 
 @respond_to("golden-cross (.*)", re.IGNORECASE)
@@ -31,8 +41,16 @@ def golden_cross(message, ticker):
         ticker=ticker,
     )
     utils.store_graph(fig, f"{ticker}_golden_cross.html")
-    message.send_webapi('', json.dumps(utils.attachments(
-        message, title=f"Golden Cross Chart For {ticker}", title_link=utils.html_url(f"{ticker}_golden_cross.html"))))
+    message.send_webapi(
+        "",
+        json.dumps(
+            utils.attachments(
+                message,
+                title=f"Golden Cross Chart For {ticker}",
+                title_link=utils.html_url(f"{ticker}_golden_cross.html"),
+            )
+        ),
+    )
 
 
 @respond_to("sma (.*)", re.IGNORECASE)
@@ -42,5 +60,13 @@ def sma(message, ticker):
     fig = charting.plot_sma(sma)
     filename = f"{ticker}_sma.html"
     utils.store_graph(fig, filename)
-    message.send_webapi('', json.dumps(utils.attachments(
-        message, title=f"SMA Chart For {ticker}", title_link=utils.html_url(filename))))
+    message.send_webapi(
+        "",
+        json.dumps(
+            utils.attachments(
+                message,
+                title=f"SMA Chart For {ticker}",
+                title_link=utils.html_url(filename),
+            )
+        ),
+    )

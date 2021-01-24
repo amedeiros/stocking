@@ -4,5 +4,6 @@ __pycache__/
 *.pyc
 *.env
 .vscode/
+.devcontainer/
 barchart_client.py
 templates/*.html

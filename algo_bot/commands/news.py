@@ -1,10 +1,12 @@
-import re
 import json
+import re
+
 import pandas as pd
 from slackbot.bot import respond_to
-from algo_bot.commands import utils
+
 from algo_bot import charting
 from algo_bot.clients import finviz_client, trends
+from algo_bot.commands import utils
 
 
 @respond_to("news (.*)", re.IGNORECASE)
@@ -27,8 +29,16 @@ def interest_over_time(message, ticker):
     fig = charting.line_chart_trends(df)
     filename = f"{ticker}_interest_over_time.html"
     utils.store_graph(fig, filename)
-    message.send_webapi('', json.dumps(utils.attachments(
-        message, title=f"Interest Over Time: {ticker}", title_link=utils.html_url(filename))))
+    message.send_webapi(
+        "",
+        json.dumps(
+            utils.attachments(
+                message,
+                title=f"Interest Over Time: {ticker}",
+                title_link=utils.html_url(filename),
+            )
+        ),
+    )
 
 
 def _get_news_urls(ticker):

@@ -19,7 +19,7 @@ def candlestick_plot(df):
                 y=df["5. volume"],
                 name="Volume",
                 mode="lines",
-            )
+            ),
         ]
     )
     return fig
@@ -31,30 +31,31 @@ def line_chart_trends(df):
     for column in df.columns:
         if column != "isPartial":
             fig.add_trace(
-                go.Scatter(x=df.index, y=df[column],
-                           mode="lines+markers", name=column)
+                go.Scatter(x=df.index, y=df[column], mode="lines+markers", name=column)
             )
 
     return fig
 
 
 def plot_sma(df):
-    fig = go.Figure(data=[
-        go.Scatter(
-            x=list(df.index),
-            y=df["SMA"],
-            name="SMA",
-            mode="lines",
-        )
-    ])
+    fig = go.Figure(
+        data=[
+            go.Scatter(
+                x=list(df.index),
+                y=df["SMA"],
+                name="SMA",
+                mode="lines",
+            )
+        ]
+    )
 
     return fig
 
 
 def sector_performance_chart(df):
-    fig = go.Figure(data=[
-        go.Bar(x=list(df.index), y=df["Rank A: Real-Time Performance"])
-    ])
+    fig = go.Figure(
+        data=[go.Bar(x=list(df.index), y=df["Rank A: Real-Time Performance"])]
+    )
 
     fig.update_layout(legend_title_text="Sector")
     fig.update_xaxes(title_text="Sectors")
@@ -69,8 +70,7 @@ def golden_cross(start, stop, df, sma_50, sma_200, ticker):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
-            x=df.loc[start:stop, :].index, y=df.loc[start:stop,
-                                                    "1. open"], name="price"
+            x=df.loc[start:stop, :].index, y=df.loc[start:stop, "1. open"], name="price"
         )
     )
 

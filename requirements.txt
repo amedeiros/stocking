@@ -20,3 +20,7 @@ celery==4.4.7
 flower
 redis
 alpha_vantage
+sqlalchemy_mixins
+sqlalchemy
+mysqlclient
+pyyaml

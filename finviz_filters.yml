@@ -1,0 +1,67 @@
+---
+:descriptive:
+  :any:
+    :value: ''
+    :text: "--- Descriptive ---"
+  :sh_relvol_o2:
+    :value: sh_relvol_o2
+    :text: Relative Volume Over 2
+:exchanges:
+  :any:
+    :value: ''
+    :text: "--- Exchanges ---"
+  :nasdaq:
+    :value: exch_nasd
+    :text: NASDAQ
+  :amex:
+    :value: exch_amex
+    :text: AMEX
+  :nyse:
+    :value: exch_nyse
+    :text: NYSE
+:countries:
+  :any:
+    :value: ''
+    :text: "--- Countries ---"
+  :usa:
+    :value: geo_usa
+    :text: USA
+  :foreign_ex_usa:
+    :value: geo_notusa
+    :text: Foreign Exhange (USA)
+  :asia:
+    :value: geo_asia
+    :text: Asia
+  :europe:
+    :value: geo_europe
+    :text: Europe
+:share_prices:
+  :any:
+    :value: ''
+    :text: "--- Share Price ---"
+  :under_5:
+    :value: sh_price_u5
+    :text: Shares Under $5
+  :under_2:
+    :value: sh_price_u2
+    :text: Share Under $2
+:indicators:
+  :any:
+    :value: ''
+    :text: "--- Indicators ---"
+  :sma_50_over_sma_200:
+    :value: ta_sma200_cross50b
+    :text: SMA200 Cross Below SMA50
+  :ta_highlow20d_nh:
+    :value: ta_highlow20d_nh
+    :text: New 20 Day High
+  :ta_gap_u:
+    :value: ta_gap_u
+    :text: Gap Up
+:atrs:
+  :any:
+    :value: ''
+    :text: "--- Average True Range ---"
+  :ta_averagetruerange_o2:
+    :value: ta_averagetruerange_o2
+    :text: ATR - Over 2

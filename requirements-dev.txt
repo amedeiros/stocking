@@ -3,3 +3,4 @@ flake8==3.8.4
 bandit==1.7.0
 black
 mypy==0.790
+lock
