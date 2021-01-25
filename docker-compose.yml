@@ -9,6 +9,7 @@ services:
       - .:/usr/src/app
     depends_on:
       - db
+      - workers
   bot:
     <<: *dev
     command: ["python", "./algo_bot/run.py"]
@@ -29,31 +30,26 @@ services:
     restart: always
     ports:
       - 8080:8080
-
-  # worker-ui:
-  #   <<: *dev
-  #   command: ["flower","-A", "worker_app", "--address=0.0.0.0", "--broker=redis://redis:6379/0"]
-  #   depends_on:
-  #     - redis
-  #   ports:
-  #     - 5555:5555
-  #   networks:
-  #     - stocking
-  # workers:
-  #   <<: *dev
-  #   command: ["celery", "-A", "worker_app", "worker", "-l", "INFO"]
-  #   depends_on:
-  #     - worker-ui
-  #     - redis
-  #   networks:
-  #     - stocking
-  # redis:
-  #   image: "redis"
-  #   ports:
-  #     - 6379:6379
-  #   networks:
-  #     - stocking
-networks:
-  stocking:
+  worker-ui:
+    <<: *dev
+    command: ["flower","-A", "algo_bot.worker.app", "--address=0.0.0.0", "--broker=redis://redis:6379/0"]
+    depends_on:
+      - redis
+    ports:
+      - 5555:5555
+  workers:
+    <<: *dev
+    command: ["celery", "-A", "algo_bot.worker.app", "worker", "-l", "INFO"]
+    depends_on:
+      - redis
+      - db
+      - worker-ui
+  redis:
+    image: "redis"
+    ports:
+      - 6379:6379
+    volumes:
+      - cache:/data
 volumes:
   dbdata:
+  cache:
