@@ -30,7 +30,7 @@ class Screener(BaseModel):
     user = relationship("User", back_populates="screeners")
     filters = sa.Column(sa.NVARCHAR(1000), nullable=False)
     name = sa.Column(sa.NVARCHAR(200), nullable=False, unique=True)
-    cron = sa.Column(sa.NVARCHAR(100), nullable=True)
+    cron = sa.Column(sa.NVARCHAR(100), nullable=True, default="*/5 9-16 * * 1-5")
 
 
 # DB Connection setup

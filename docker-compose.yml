@@ -35,11 +35,12 @@ services:
     command: ["flower","-A", "algo_bot.worker.app", "--address=0.0.0.0", "--broker=redis://redis:6379/0"]
     depends_on:
       - redis
+      - db
     ports:
       - 5555:5555
   workers:
     <<: *dev
-    command: ["celery", "-A", "algo_bot.worker.app", "worker", "-l", "INFO"]
+    command: ["celery", "-A", "algo_bot.worker.app", "worker", "-B", "-l", "INFO"]
     depends_on:
       - redis
       - db

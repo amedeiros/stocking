@@ -8,7 +8,7 @@ from algo_bot.clients import finviz_client
 from algo_bot.commands import utils
 
 
-@respond_to("screener (.*)", re.IGNORECASE)
+@respond_to("^screener (.*)", re.IGNORECASE)
 def screener(message, filters):
     df = finviz_client.screener(filters=filters.split(","))
     filename = f"{filters.replace(',', '_')}screener.html"

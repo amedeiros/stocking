@@ -12,28 +12,41 @@ def help(message):
         """
 Stocking bot help sub-commands (%s)
 
-    @stockbot manual help (Display manual analysis commands)
-    @stockbot user help (Display user commands)
+    @stockbot manual-help (Display manual analysis commands)
+    @stockbot user-help (Display user commands)
+    @stockbot screener-help (Display screener commands requires user account)
 """
         % BOT_ENV
     )
     message.reply(utils.wrap_ticks(response))
 
 
-@respond_to("user help", re.IGNORECASE)
+@respond_to("^screener-help", re.IGNORECASE)
+def screener_help(message):
+    response = (
+        """
+Stocking bot screener commands (%s)
+
+    @stockbot screener-new --name NAME --filters FILTERS (csv string) --cron CRON (Optional)
+"""
+    % BOT_ENV
+    )
+    message.reply(utils.wrap_ticks(response))
+
+@respond_to("^user-help", re.IGNORECASE)
 def user_help(message):
     response = (
         """
-Stocking bot help user commands (%s)
+Stocking bot user commands (%s)
 
-    @stockbot user register EMAIL FIRST_NAME LAST_NAME
+    @stockbot user-new --email EMAIL --first_name FIRST_NAME --last_name LAST_NAME
     """
         % BOT_ENV
     )
     message.reply(utils.wrap_ticks(response))
 
 
-@respond_to("manual help", re.IGNORECASE)
+@respond_to("^manual-help", re.IGNORECASE)
 def manual(message):
     response = (
         """
