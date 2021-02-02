@@ -2,7 +2,7 @@ import re
 
 from slackbot.bot import respond_to
 
-from algo_bot.commands import utils
+from algo_bot import utils
 from algo_bot.slackbot_settings import BOT_ENV
 
 
@@ -18,20 +18,36 @@ Stocking bot help sub-commands (%s)
 """
         % BOT_ENV
     )
-    message.reply(utils.wrap_ticks(response))
+    utils.reply_webapi(message, utils.wrap_ticks(response))
+
+
+@respond_to("^strategies-help", re.IGNORECASE)
+def strategies_help(message):
+    response = (
+        """
+Stocking bot strategy commands requires an account (%s)
+
+    @stockbot strategy-risk-vs-reward --screener-id ID (Run the strategy with the specified stock screener.)
+"""
+        % BOT_ENV
+    )
+    utils.reply_webapi(message, utils.wrap_ticks(response))
 
 
 @respond_to("^screener-help", re.IGNORECASE)
 def screener_help(message):
     response = (
         """
-Stocking bot screener commands (%s)
+Stocking bot screener commands requires an account (%s)
 
     @stockbot screener-new --name NAME --filters FILTERS (csv string) --cron CRON (Optional)
+    @stockbot screener-list (Display your screeners)
+    @stockbot screener-run --id ID (Run a screener you own)
 """
-    % BOT_ENV
+        % BOT_ENV
     )
-    message.reply(utils.wrap_ticks(response))
+    utils.reply_webapi(message, utils.wrap_ticks(response))
+
 
 @respond_to("^user-help", re.IGNORECASE)
 def user_help(message):
@@ -43,7 +59,7 @@ Stocking bot user commands (%s)
     """
         % BOT_ENV
     )
-    message.reply(utils.wrap_ticks(response))
+    utils.reply_webapi(message, utils.wrap_ticks(response))
 
 
 @respond_to("^manual-help", re.IGNORECASE)
@@ -71,4 +87,4 @@ Stocking bot help manual analysis (%s)
     """
         % BOT_ENV
     )
-    message.reply(utils.wrap_ticks(response))
+    utils.reply_webapi(message, utils.wrap_ticks(response))

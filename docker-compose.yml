@@ -32,7 +32,7 @@ services:
       - 8080:8080
   worker-ui:
     <<: *dev
-    command: ["flower","-A", "algo_bot.worker.app", "--address=0.0.0.0", "--broker=redis://redis:6379/0"]
+    command: ["flower","-A", "algo_bot.worker.app", "-l", "info", "--address=0.0.0.0", "--broker=redis://redis:6379/0", "--broker_api=redis://redis:6379/0"]
     depends_on:
       - redis
       - db
@@ -40,7 +40,7 @@ services:
       - 5555:5555
   workers:
     <<: *dev
-    command: ["celery", "-A", "algo_bot.worker.app", "worker", "-B", "-l", "INFO"]
+    command: ["celery", "-A", "algo_bot.worker.app", "worker", "-E", "-B", "-l", "INFO"]
     depends_on:
       - redis
       - db
@@ -51,6 +51,11 @@ services:
       - 6379:6379
     volumes:
       - cache:/data
+  lock-requirements:
+    <<: *dev
+    depends_on: []
+    entrypoint: "/bin/bash"
+    command: "lock-requirements.sh"
 volumes:
   dbdata:
   cache:

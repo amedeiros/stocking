@@ -1,3 +1,4 @@
+import matplotlib.pyplot as plt
 import plotly.graph_objects as go
 
 
@@ -151,5 +152,26 @@ def predicted_golden_cross(
     )
 
     fig.update_layout(title_text=ticker, xaxis_rangeslider_visible=True)
+
+    return fig
+
+
+def risk_vs_return(df, s):
+    fig = plt.figure()
+    plt.scatter(df.mean(), df.std(), alpha=0.5, s=s)
+
+    plt.xlabel("Expected returns")
+    plt.ylabel("Risk")
+
+    for label, x, y in zip(df.columns, df.mean(), df.std()):
+        plt.annotate(
+            label,
+            xy=(x, y),
+            xytext=(50, 30),
+            textcoords="offset points",
+            ha="right",
+            va="bottom",
+            arrowprops=dict(arrowstyle="-", connectionstyle="arc3,rad=0.5"),
+        )
 
     return fig

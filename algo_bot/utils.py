@@ -1,11 +1,15 @@
+import json
 import os
+import shlex
 from dataclasses import dataclass
 from datetime import datetime, timedelta
+from functools import wraps
 
 import boto3
 import plotly
 from tabulate import tabulate
 
+from algo_bot.db.models import User
 from algo_bot.slackbot_settings import BOT_ENV
 
 
@@ -59,6 +63,17 @@ def html_url(name, bucket="stocks-am"):
     )
 
 
+def image_url(name, bucket="stocks-am"):
+    return boto3.client("s3").generate_presigned_url(
+        ClientMethod="get_object",
+        Params={
+            "Bucket": bucket,
+            "Key": name,
+            "ResponseContentType": "image/png",
+        },
+    )
+
+
 def store_html(html, name, bucket="stocks-am"):
     f = open("templates/%s" % name, "w")
     f.write(
@@ -74,6 +89,17 @@ def store_html(html, name, bucket="stocks-am"):
     f.close()
     s3 = boto3.resource("s3")
     s3.Object(bucket, name).put(Body=open("templates/%s" % name, "rb"))
+
+
+def store_pyplat_graph(fig, name, bucket="stocks-am"):
+    if BOT_ENV == "development":
+        filename = f"./templates/{name}"
+        fig.savefig(filename)
+        s3 = boto3.resource("s3")
+        s3.Object(bucket, name).put(Body=open(filename, "rb"))
+        os.remove(filename)
+    else:
+        raise RuntimeError("Unknown environment %s" % BOT_ENV)
 
 
 def store_graph(fig, name, bucket="stocks-am"):
@@ -139,5 +165,59 @@ def position_sizing_short(risk, price, stop, exit):
     )
 
 
+def reply_webapi(message, text):
+    message.reply_webapi(text, as_user=False)
+
+
+def send_webapi(message, text, title, title_link=""):
+    message.send_webapi(
+        "",
+        json.dumps(
+            attachments(
+                message,
+                text=text,
+                title=title,
+                title_link=title_link,
+            )
+        ),
+        as_user=False,
+    )
+
+
 def _round_down(num, divisor=10):
     return num - (num % divisor)
+
+
+# Annotations
+def auth(func):
+    def inner(*args, **kwargs):
+        message = args[0]
+        processing(message)
+        user = User.where(slack=message.user["id"]).first()
+
+        if not user:
+            reply_webapi(message, "Error: must create an account!")
+        else:
+            # After Auth assign the db user object to the message
+            # then rewrite the args
+            message.user["db_user"] = user
+            args = tuple([message]) + args[1:]
+            func(*args, **kwargs)
+
+    return inner
+
+
+def parse_params(parser, *args):
+    def inner_function(func):
+        @wraps(func)
+        def wrapper(*args, **kwargs):
+            # If a parser was supplied parse the params and reasign
+            params = args[1]
+            params = shlex.split(params)
+            params = parser.parse_args(params)
+            args = (args[0], params) + args[2:]
+            func(*args, **kwargs)
+
+        return wrapper
+
+    return inner_function

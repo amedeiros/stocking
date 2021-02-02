@@ -1,10 +1,9 @@
-import os
-from algo_bot.settings import get_settings, AlgoBotSettings
+from algo_bot.settings import AlgoBotSettings, get_settings
 
-settings = get_settings()
+settings: AlgoBotSettings = get_settings()
 
 DEFAULT_REPLY = "Sorry but I didn't understand you"
-
+BOT_EMOJI = ":robot_face:"
 PLUGINS = [
     "slackbot.plugins",
     "algo_bot.commands.finviz",
@@ -14,6 +13,7 @@ PLUGINS = [
     "algo_bot.commands.ticker",
     "algo_bot.commands.user",
     "algo_bot.commands.screener",
+    "algo_bot.commands.strategies",
 ]
 
 
