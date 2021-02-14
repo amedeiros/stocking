@@ -1,5 +1,5 @@
 requests==2.25.1
-finviz==1.3.4
+finviz
 plotly==4.14.3
 pystan==3.0.0b6
 pandas==1.2.0
@@ -27,3 +27,4 @@ mysqlclient
 pyyaml
 slack_sdk
 yfinance
+hy

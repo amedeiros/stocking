@@ -15,6 +15,7 @@ Stocking bot help sub-commands (%s)
     @stockbot manual-help (Display manual analysis commands)
     @stockbot user-help (Display user commands)
     @stockbot screener-help (Display screener commands requires user account)
+    @stockbot strategies-help (Display help for strategies)
 """
         % BOT_ENV
     )

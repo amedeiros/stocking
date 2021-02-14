@@ -6,6 +6,7 @@ from datetime import datetime, timedelta
 from functools import wraps
 
 import boto3
+import pandas as pd
 import plotly
 from tabulate import tabulate
 
@@ -22,6 +23,20 @@ class Positioning:
     profit: float
     purchase_cost: float
     risk_reward_ratio: float
+
+    def to_df(self):
+        return pd.DataFrame(data=[self.to_dict()])
+
+    def to_dict(self):
+        return {
+            "position_size": self.position_size,
+            "max_loss_per_share": self.max_loss_per_share,
+            "total_risk": self.total_risk,
+            "total_gain": self.total_gain,
+            "profit": self.profit,
+            "purchase_cost": self.purchase_cost,
+            "risk_reward_ratio": self.risk_reward_ratio,
+        }
 
 
 def attachments(
@@ -44,7 +59,7 @@ def wrap_ticks(message):
     return """\n```\n%s\n```""" % (message)
 
 
-def wrap_ticks_tabluate(df, headers="keys", tablefmt="pipe"):
+def wrap_ticks_tabulate(df, headers="keys", tablefmt="pipe"):
     return wrap_ticks(tabulate(df, headers=headers, tablefmt=tablefmt))
 
 

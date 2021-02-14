@@ -34,7 +34,7 @@ def screener_list(message):
     user = message.user["db_user"]
     screeners = user.screeners
     df = pd.DataFrame(data=list(map(lambda x: x.to_dict(), screeners))).set_index("id")
-    utils.reply_webapi(message, utils.wrap_ticks_tabluate(df))
+    utils.reply_webapi(message, utils.wrap_ticks_tabulate(df))
 
 
 @respond_to("^screener-run --id (.*)")

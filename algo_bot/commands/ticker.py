@@ -37,4 +37,4 @@ def ticker(message, ticker):
 @respond_to("ticker-top5 (.*)", re.IGNORECASE)
 def ticker_top(message, ticker):
     df = alpha_vantage_client.time_series_daily(ticker).head()
-    utils.reply_webapi(message, utils.wrap_ticks_tabluate(df))
+    utils.reply_webapi(message, utils.wrap_ticks_tabulate(df))
