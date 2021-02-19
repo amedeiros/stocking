@@ -17,12 +17,13 @@
 ; Decorator
 (defn cache-memoize [key]
     (fn [func]
-        (fn [&rest args]
-            (setv cache-key f"{key}:{args}:{(utils.today)}")
+        (fn [&rest args &kwargs kwargs]
+            ; TODO: Improve this cahce key it sucks make a hashing funciton
+            (setv cache-key f"{key}:{args}:{kwargs}:{(utils.today)}")
             (setv data (read cache-key))
             ; Weird None check for dataframe not a problem in python with `data is not None` shurg.
             (if (= (type data) (type None))
                 (do
-                    (setv data (func #*args))
+                    (setv data (func #*args #**kwargs))
                     (write :key cache-key :value data)))
             data)))
