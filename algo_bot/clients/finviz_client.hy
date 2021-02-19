@@ -7,10 +7,10 @@
 ; Decorator to create a new event loop and exit
 ; TODO: Move to utils when ported to HY
 (defn event-loop [func]
-    (fn [&rest args]
+    (fn [&rest args &kwargs kwargs]
         (setv loop (asyncio.new_event_loop))
         (asyncio.set_event_loop loop)
-        (setv result (func #*args))
+        (setv result (func #*args #**kwargs))
         (loop.close)
         result))
 
