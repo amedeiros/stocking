@@ -98,20 +98,12 @@ def _turtle(screener):
         daily = None
         sma_50 = None
         sma_200 = None
-        # This can take for ever need better alpha vantage license.
-        while True:
-            try:
-                # Last 55 days
-                daily = avc.time_series_daily(ticker).head(55)
+        # Last 55 days
+        daily = avc.time_series_daily(ticker).head(55)
 
-                # SMA-50 and SMA-200
-                sma_50 = avc.sma(ticker).sort_values(by="date", ascending=False).head(55)
-                sma_200 = avc.sma(ticker, time_period="200").sort_values(by="date", ascending=False).head(55)
-            except ValueError as exc:
-                print(exc)
-                time.sleep(60)
-            else:
-                break
+        # SMA-50 and SMA-200
+        sma_50 = avc.sma(ticker).sort_values(by="date", ascending=False).head(55)
+        sma_200 = avc.sma(ticker, time_period="200").sort_values(by="date", ascending=False).head(55)
 
         # Calculate when the golden cross happened.
         # Calcuate are we above the golden cross still.
