@@ -15,10 +15,10 @@
         None))
 
 ; Decorator
-(defn cache-memoize [arg]
+(defn cache-memoize [key]
     (fn [func]
         (fn [&rest args]
-            (setv cache-key f"{arg}:{args}:{(utils.today)}")
+            (setv cache-key f"{key}:{args}:{(utils.today)}")
             (setv data (read cache-key))
             ; Weird None check for dataframe not a problem in python with `data is not None` shurg.
             (if (= (type data) (type None))
