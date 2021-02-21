@@ -1,5 +1,6 @@
 (import os time)
-(import [algo_bot.cache [cache-memoize]] )
+(import [algo_bot.cache [cache-memoize]])
+(import [algo_bot.utils [with-backoff]])
 (import [typing [Tuple]])
 (import [alpha_vantage.fundamentaldata [FundamentalData]])
 (import [alpha_vantage.sectorperformance [SectorPerformances]])
@@ -16,20 +17,6 @@
     (TechIndicators :key KEY :output_format "pandas"))
 (setv FUNDAMENTAL_DATA
     (FundamentalData :key KEY :output_format "pandas"))
-
-; Decorator to wait for seconds and retry a function call
-; TODO: Move to utils when ported to Hy.
-(defn with-backoff [exception &optional [wait-seconds 60]]
-    (fn [func]
-        (fn [&rest args &kwargs kwargs]
-            (while True
-                (try
-                    (setv results (func #*args #**kwargs))
-                    (break)
-                    (except [exception]
-                        (print "Backing off...")
-                        (time.sleep wait-seconds))))
-            results)))
 
 (with-decorator (cache-memoize "time-series-daily")
                 (with-backoff ValueError)

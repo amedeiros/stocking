@@ -15,5 +15,5 @@ POSITION_PARSER.add_argument("--stop", type=float, required=True)
 @respond_to("positioning-long (.*)", re.IGNORECASE)
 @utils.parse_params(parser=POSITION_PARSER)
 def position_long(message, params):
-    r = utils.postion_sizing_long(params.risk, params.price, params.stop, params.exit)
+    r = utils.position_sizing_long(params.risk, params.price, params.stop, params.exit)
     utils.reply_webapi(message, utils.wrap_ticks_tabulate(r.to_df()))

@@ -1,18 +1,8 @@
 (import asyncio nest_asyncio finviz)
+(import [algo-bot.utils [event-loop]])
 (import [pandas :as pd])
 (import [finviz.screener [Screener]])
 
-(nest_asyncio.apply)
-
-; Decorator to create a new event loop and exit
-; TODO: Move to utils when ported to HY
-(defn event-loop [func]
-    (fn [&rest args &kwargs kwargs]
-        (setv loop (asyncio.new_event_loop))
-        (asyncio.set_event_loop loop)
-        (setv result (func #*args #**kwargs))
-        (loop.close)
-        result))
 
 (with-decorator event-loop
     (defn screener [&optional [filters ["exch_nasd" "sh_avgvol_o200" "sh_price_u5" "ta_change_u10" "geo_usa"]] [order "-volume"]]
