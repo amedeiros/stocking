@@ -7,3 +7,8 @@ hooks:
   ApplicationStart:
     - location: scripts/start.sh
       timeout: 3600
+  ApplicationStop:
+    - location: scripts/stop.sh
+      timeout: 3600
+  Install:
+    - location: scripts/install.sh
