@@ -135,26 +135,28 @@
     (- num (% num divisor)))
 
 ; Storage helpers
+(defn store-s3 [filename name &optional [bucket "stocks-am"]]
+    (setv s3 (boto3.resource "s3"))
+    (.put (s3.Object bucket name) :Body (open filename "rb"))
+    (os.remove filename))
 
-(defn store-html [html name &optional [bucket "stocks-am"]]
-    (with [f (open f"templates/{name}" "w")]
+(defn store-html [html name]
+    (setv filename f"templates/{name}")
+    (with [f (open filename "w")]
         (f.write "<link rel=\"stylesheet\" href=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/css/bootstrap.min.css\">\n")
         (f.write "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js\"></script>\n")
         (f.write "<script src=\"https://maxcdn.bootstrapcdn.com/bootstrap/3.4.1/js/bootstrap.min.js\"></script>\n")
         (f.write html))
-    (setv s3 (boto3.resource "s3"))
-    (.put (s3.Object bucket name) :Body (open f"templates/{name}" "rb")))
+    (store-s3 filename name))
 
 ; Storage decorator for graphs
 (defn graph-storage [func]
-    (fn [fig name &optional [bucket "stocks-am"]]
+    (fn [fig name]
         (if (= BOT_ENV "development")
             (do
                 (setv filename f"./templates/{name}")
                 (func fig filename)
-                (setv s3 (boto3.resource "s3"))
-                (.put (s3.Object bucket name) :Body (open filename "rb"))
-                (os.remove filename))
+                (store-s3 filename name))
             (raise (RuntimeError f"Unknown environment {BOT_ENV}")))))
 
 (with-decorator graph-storage
