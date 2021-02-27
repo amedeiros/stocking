@@ -1,3 +1,3 @@
 #!/usr/bin/env bash
 
-kill -9 $(cat /app/bot.pid) || true
+kill -9 $(cat /bot.pid) || true
