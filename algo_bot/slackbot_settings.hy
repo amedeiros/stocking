@@ -6,8 +6,9 @@
 (setv BOT_EMOJI ":robot_face:")
 (setv PLUGINS [
     "slackbot.plugins"
-    "algo_bot.commands.finviz"
     "algo_bot.commands.help"
+    "algo_bot.commands.finviz"
+    "algo_bot.commands.watchlist"
     "algo_bot.commands.news"
     "algo_bot.commands.technical"
     "algo_bot.commands.ticker"

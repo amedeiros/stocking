@@ -2,6 +2,7 @@ import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
+from algo_bot.clients import alpha_vantage_client as avc
 
 from algo_bot.clients import finviz_client
 from algo_bot.settings import AlgoBotSettings, get_settings
@@ -24,6 +25,7 @@ class User(BaseModel):
     last_name = sa.Column(sa.NVARCHAR(100), nullable=False)
     timezone = sa.Column(sa.NVARCHAR(200), nullable=True)
     screeners = relationship("Screener")
+    watchlists = relationship("Watchlist")
 
 
 class Screener(BaseModel):
@@ -48,6 +50,46 @@ class Screener(BaseModel):
             "created_at": self.created_at,
             "updated_at": self.updated_at,
         }
+
+
+class Watchlist(BaseModel):
+    __tablename__ = "watchlists"
+    user_id = sa.Column(
+        sa.BIGINT, sa.ForeignKey(f"{settings.db_name}.users.id"), nullable=False
+    )
+    user = relationship("User", back_populates="watchlists")
+    name = sa.Column(sa.NVARCHAR(1000), nullable=False, unique=True)
+    tickers = sa.Column(sa.NVARCHAR(1000), nullable=True)
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "name": self.name,
+            "tickers": self.tickers,
+        }
+
+    def add_ticker(self, ticker):
+        if self.tickers is None:
+            self.tickers = ticker
+        else:
+            self.tickers += f",{ticker}"
+
+        return self.save()
+
+    def del_ticker(self, ticker):
+        if self.tickers is not None:
+            ticks = self.tickers.split(",")
+            if ticker in ticks:
+                ticks.remove(ticker)
+                self.tickers = ",".join(ticks)
+
+        return self.save()
+
+    def latest(self):
+        df = pd.Dataframe()
+        for ticker in self.tickers.split(","):
+            latest = avc.time_series_daily(ticker).head(1)
+
 
 
 # DB Connection setup

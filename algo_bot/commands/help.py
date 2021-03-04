@@ -29,6 +29,7 @@ def strategies_help(message):
 Stocking bot strategy commands requires an account (%s)
 
     @stockbot strategy-risk-vs-reward --screener-id ID (Run the strategy with the specified stock screener.)
+    @stockbot strategy-turtle --screener-id ID (Run the turtle trader straategy for this screener.)
 """
         % BOT_ENV
     )

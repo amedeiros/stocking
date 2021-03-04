@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from slackbot.bot import respond_to
 
-from algo_bot import charting, utils, cache
+from algo_bot import cache, charting, utils
 from algo_bot.clients import alpha_vantage_client as avc
 from algo_bot.db.models import Screener
 
@@ -18,6 +18,7 @@ RUN_STRATEGY_PARSER.add_argument("--screener-id", type=int, required=True)
 AREA = np.pi * 20
 
 MAX_RECORDS = 10
+
 
 @respond_to("^strategy-risk-vs-reward (.*)", re.IGNORECASE)
 @utils.auth
@@ -64,7 +65,7 @@ def run_strategy_turtle(message, params):
 
         if df is None:
             df = _turtle(screener)
-            cache.write(key, df, 60*60)
+            cache.write(key, df, 60 * 60)
 
         filename = f"{screener.id}_turtle.html"
         utils.store_html(df.to_html(classes="table table-striped"), filename)
@@ -90,7 +91,7 @@ def _turtle(screener):
         current_volume = None
         row = results[results["Ticker"] == ticker]
         try:
-            current_price = row["Price"].max()
+            current_price = float(row["Price"].max())
             current_volume = row["Volume"].max()
         except KeyError as exc:
             breakpoint()
@@ -103,15 +104,19 @@ def _turtle(screener):
 
         # SMA-50 and SMA-200
         sma_50 = avc.sma(ticker).sort_values(by="date", ascending=False).head(55)
-        sma_200 = avc.sma(ticker, time_period="200").sort_values(by="date", ascending=False).head(55)
+        sma_200 = (
+            avc.sma(ticker, time_period="200")
+            .sort_values(by="date", ascending=False)
+            .head(55)
+        )
 
         # Calculate when the golden cross happened.
         # Calcuate are we above the golden cross still.
         golden_cross_days = sma_50[sma_50["SMA"] > sma_200["SMA"]]
-        above_cross = golden_cross_days.loc[golden_cross_days.idxmax()]
+        # above_cross = golden_cross_days.loc[golden_cross_days.idxmax()]
         first_cross = golden_cross_days.loc[golden_cross_days.idxmin()]
         first_cross_date = first_cross.idxmax()[0]
-        most_recent_above_date = above_cross.idxmax()[0]
+        # most_recent_above_date = above_cross.idxmax()[0]
         first_cross_close = daily.loc[first_cross_date]["4. close"]
 
         # Find the highest close price in the last 55 days
@@ -119,10 +124,11 @@ def _turtle(screener):
         max_row = daily.loc[daily["4. close"].idxmax()]
 
         # Buy if the cross has happend before today and the sma 50 is still above sma 200
-        buy = (
-            first_cross_date <= datetime.utcnow()
-            and datetime.utcnow() >= most_recent_above_date
-        )
+        # buy = (
+        #     first_cross_date <= datetime.utcnow()
+        #     and datetime.utcnow() >= most_recent_above_date
+        # )
+        buy = current_price >= first_cross_close
         records.append(
             {
                 "ticker": ticker,

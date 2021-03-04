@@ -15,10 +15,7 @@ def candlestick_plot(df):
                 name="Candlestick",
             ),
             go.Scatter(
-                x=list(df.index),
-                y=df["5. volume"],
-                name="Volume",
-                mode="lines",
+                x=list(df.index), y=df["5. volume"], name="Volume", mode="lines",
             ),
         ]
     )
@@ -39,14 +36,7 @@ def line_chart_trends(df):
 
 def plot_sma(df):
     fig = go.Figure(
-        data=[
-            go.Scatter(
-                x=list(df.index),
-                y=df["SMA"],
-                name="SMA",
-                mode="lines",
-            )
-        ]
+        data=[go.Scatter(x=list(df.index), y=df["SMA"], name="SMA", mode="lines",)]
     )
 
     return fig

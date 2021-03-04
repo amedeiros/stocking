@@ -21,7 +21,7 @@ def candlestick(message, ticker, interval="60min"):
     )
 
 
-@respond_to("ticker (.*)", re.IGNORECASE)
+@respond_to("^ticker (.*)", re.IGNORECASE)
 def ticker(message, ticker):
     df = alpha_vantage_client.company_overview(ticker)
     filename = f"{ticker}_overview.html"
