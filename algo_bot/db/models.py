@@ -1,9 +1,10 @@
+import pandas as pd
 import sqlalchemy as sa
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker
 from sqlalchemy_mixins import AllFeaturesMixin, TimestampsMixin
+
 from algo_bot.clients import alpha_vantage_client as avc
-import pandas as pd
 from algo_bot.clients import finviz_client
 from algo_bot.settings import AlgoBotSettings, get_settings
 
@@ -91,15 +92,17 @@ class Watchlist(BaseModel):
         for ticker in self.tickers.split(","):
             latest = avc.time_series_daily(ticker).head(1)
             latest.reset_index(level=0, inplace=True)
-            data.append({
-                "ticker": ticker,
-                "date": latest["date"][0],
-                "open": latest["1. open"][0],
-                "high": latest["2. high"][0],
-                "low": latest["3. low"][0],
-                "close": latest["4. close"][0],
-                "volume": float(latest["5. volume"][0]),
-            })
+            data.append(
+                {
+                    "ticker": ticker,
+                    "date": latest["date"][0],
+                    "open": latest["1. open"][0],
+                    "high": latest["2. high"][0],
+                    "low": latest["3. low"][0],
+                    "close": latest["4. close"][0],
+                    "volume": float(latest["5. volume"][0]),
+                }
+            )
 
         return pd.DataFrame(data=data)
 

@@ -16,6 +16,7 @@ WATCHLIST_UPDATE = argparse.ArgumentParser()
 WATCHLIST_UPDATE.add_argument("--id", type=int, required=True)
 WATCHLIST_UPDATE.add_argument("--ticker", type=str, required=True)
 
+
 @respond_to("^watchlist-new (.*)", re.IGNORECASE)
 @utils.auth
 @utils.parse_params(parser=WATCHLIST_NEW_PARSER)
@@ -36,6 +37,7 @@ def list_watchlists(message):
     df = pd.DataFrame(data=list(map(lambda x: x.to_dict(), watchlists))).set_index("id")
     utils.reply_webapi(message, utils.wrap_ticks_tabulate(df))
 
+
 @respond_to("^watchlist-add-ticker (.*)", re.IGNORECASE)
 @utils.auth
 @utils.parse_params(parser=WATCHLIST_UPDATE)
@@ -49,6 +51,7 @@ def watchlist_add_ticker(message, params):
     else:
         utils.reply_webapi(message, "You do not own a watchlist with that id!")
 
+
 @respond_to("^watchlist-del-ticker (.*)", re.IGNORECASE)
 @utils.auth
 @utils.parse_params(parser=WATCHLIST_UPDATE)
@@ -61,6 +64,7 @@ def watchlist_del_ticker(message, params):
         utils.reply_webapi(message, f"Updated watchlist {watchlist.name}.")
     else:
         utils.reply_webapi(message, "You do not own a watchlist with that id!")
+
 
 @respond_to("^watchlist-view --id (.*)", re.IGNORECASE)
 @utils.auth
