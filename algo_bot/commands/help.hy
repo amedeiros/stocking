@@ -1,74 +1,61 @@
-import re
+(import re)
+(import [slackbot.bot [respond-to]])
+(import [algo-bot [utils]])
+(import [algo-bot.slackbot-settings [BOT_ENV]])
 
-from slackbot.bot import respond_to
+(defn _respond [message response]
+ (utils.reply-webapi message (utils.wrap-ticks response)))
 
-from algo_bot import utils
-from algo_bot.slackbot_settings import BOT_ENV
-
-
-@respond_to("^help", re.IGNORECASE)
-def help(message):
-    response = (
-        """
-Stocking bot help sub-commands (%s)
+(with-decorator (respond-to "^help" re.IGNORECASE)
+    (defn help [message]
+        (_respond message
+f"
+Stocking bot help sub-commands ({BOT_ENV})
 
     @stockbot manual-help (Display manual analysis commands)
     @stockbot user-help (Display user commands)
     @stockbot screener-help (Display screener commands requires user account)
     @stockbot strategies-help (Display help for strategies)
-"""
-        % BOT_ENV
-    )
-    utils.reply_webapi(message, utils.wrap_ticks(response))
+    @stockbot watchlist-help (Display help for watchlists)
+")))
 
-
-@respond_to("^strategies-help", re.IGNORECASE)
-def strategies_help(message):
-    response = (
-        """
-Stocking bot strategy commands requires an account (%s)
+(with-decorator (respond-to "strategies-help" re.IGNORECASE)
+    (defn strategies-help [message]
+        (_respond message
+f"
+Stocking bot strategy commands requires an account ({BOT_ENV})
 
     @stockbot strategy-risk-vs-reward --screener-id ID (Run the strategy with the specified stock screener.)
     @stockbot strategy-turtle --screener-id ID (Run the turtle trader straategy for this screener.)
-"""
-        % BOT_ENV
-    )
-    utils.reply_webapi(message, utils.wrap_ticks(response))
+")))
 
-
-@respond_to("^screener-help", re.IGNORECASE)
-def screener_help(message):
-    response = (
-        """
-Stocking bot screener commands requires an account (%s)
+(with-decorator (respond-to "^screener-help" re.IGNORECASE)
+    (defn screener-help [message]
+        (_respond message
+f"
+Stocking bot screener commands requires an account ({BOT_ENV})
 
     @stockbot screener-new --name NAME --filters FILTERS (csv string) --cron CRON (Optional)
     @stockbot screener-list (Display your screeners)
     @stockbot screener-run --id ID (Run a screener you own)
-"""
-        % BOT_ENV
-    )
-    utils.reply_webapi(message, utils.wrap_ticks(response))
+")))
 
 
-@respond_to("^user-help", re.IGNORECASE)
-def user_help(message):
-    response = (
-        """
-Stocking bot user commands (%s)
+(with-decorator (respond-to "^user-help" re.IGNORECASE)
+    (defn user-help [message]
+        (_respond message
+f"
+Stocking bot user commands ({BOT_ENV})
 
     @stockbot user-new --email EMAIL --first_name FIRST_NAME --last_name LAST_NAME
-    """
-        % BOT_ENV
-    )
-    utils.reply_webapi(message, utils.wrap_ticks(response))
+")))
 
 
-@respond_to("^manual-help", re.IGNORECASE)
-def manual(message):
-    response = (
-        """
-Stocking bot help manual analysis (%s)
+(with-decorator (respond-to "^manual-help" re.IGNORECASE)
+    (defn manual-help [message]
+        (_respond message
+f"
+Stocking bot help manual analysis ({BOT_ENV})
 
     @stockbot ticker TICKER (AlphaVantage Overview)
     @stockbot news TICKER (Returns news from FinViz as individual messages of URL's to unfurl)
@@ -86,7 +73,17 @@ Stocking bot help manual analysis (%s)
     @stockbot sector-performance (Get back sector performance)
     @stockbot sma TICKER (Chart of the simple moving average)
     @stockbot golden-cross TICKER (50SMA cross over the 200SMA)
-    """
-        % BOT_ENV
-    )
-    utils.reply_webapi(message, utils.wrap_ticks(response))
+")))
+
+(with-decorator (respond-to "^watchlist-help" re.IGNORECASE)
+    (defn watchlist-help [message]
+        (_respond message
+f"
+Stocking bot watchlist commands ({BOT_ENV})
+
+    @stockbot watchlist-new --name NAME --ticker TICKER (Create a new watchlist and add a ticker)
+    @stockbot watchlist-list (List all of your watchlists)
+    @stockbot watchlist-add-ticker --id WATCHLIST_ID --ticker TICKER (Add a ticker to an existing watchlist)
+    @stockbot watchlist-del-ticker --id WATCHLIST_ID --ticker TICKER (Remove a ticker from an existing watchlist)
+    @stockbot watchlist-view --id WATCHLIST_ID (Latest open, close etc of the tickers in an existing watchlist)
+")))
