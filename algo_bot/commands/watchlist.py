@@ -69,6 +69,7 @@ def watchlist_view(message, watchlist_id):
     watchlist = Watchlist.where(id=watchlist_id, user_id=user.id).first()
 
     if watchlist:
-        pass
+        latest = watchlist.latest()
+        utils.reply_webapi(message, utils.wrap_ticks_tabulate(latest))
     else:
         utils.reply_webapi(message, "You do not own a watchlist with that id!")
