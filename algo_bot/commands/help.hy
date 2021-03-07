@@ -59,7 +59,6 @@ Stocking bot help manual analysis ({BOT_ENV})
 
     @stockbot ticker TICKER (AlphaVantage Overview)
     @stockbot news TICKER (Returns news from FinViz as individual messages of URL's to unfurl)
-    @stockbot news-compact TICKER (Returns news from FinViz as one message results in no unfurling)
     @stockbot interest-over-time TICKER (Chart news interest over time)
     @stockbot ticker-top5 TICKER (Returns last five days of open, close, high, low and volume)
     @stockbot candlestick TICKER (Link to a candlestick chart for the supplied ticker)
