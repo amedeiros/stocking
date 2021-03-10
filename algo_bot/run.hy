@@ -15,4 +15,5 @@
         (print "Starting!")
         (atexit.register goodbye)
         (bot-msg "#general" "Starting...")
+        (bot-msg "#general" "Remember buy limit and sell stop limit!")
         (bot.run)))
