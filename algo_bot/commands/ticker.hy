@@ -17,6 +17,19 @@
             :title f"Candlestick Chart For {ticker}"
             :title-link (utils.html-url filename))))
 
-; (with-decorator (respond-to "^ticker (.*)" re.IGNORECASE)
-;     (defn ticker [message ticker]
-;         (setv df )))
+(with-decorator (respond-to "^ticker (.*)" re.IGNORECASE)
+    (defn ticker [message ticker]
+        (setv df (alpha-vantage-client.company-overview ticker))
+        (setv filename f"{ticker}_overview.html")
+        (utils.store-html (df.to-html :classes "table table-striped") filename)
+        (utils.send-webapi 
+            message 
+            :text (get (get df "Description") 0)
+            :title "Overview for {ticker}"
+            :title-link (utils.html-url filename))))
+
+
+(with-decorator (respond-to "ticker-top5 (.*)" re.IGNORECASE)
+    (defn ticker-top [message ticker]
+        (setv df (.head (alpha-vantage-client.time-series-daily ticker)))
+        (utils.reply-webapi message (utils.wrap-ticks-tabulate df))))
