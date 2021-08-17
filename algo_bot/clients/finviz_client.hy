@@ -22,6 +22,7 @@
 (setv finviz-overview (finviz-table "Overview"))
 (setv finviz-technical (finviz-table "Technical"))
 (setv finviz-ownership (finviz-table "Ownership"))
+(setv finviz-financial (finviz-table "Financial"))
 
 (defn finviz-get-insider [stock]
     (finviz.get_insider stock))
