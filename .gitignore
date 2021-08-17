@@ -8,3 +8,4 @@ __pycache__/
 barchart_client.py
 templates/*.html
 celerybeat-schedule
+.dbdata/*

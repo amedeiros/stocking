@@ -1,7 +1,7 @@
 (import os)
 (import [dataclasses [dataclass]])
 
-(setv env (.get os.environ "BOT_ENV" "development"))
+(setv env (os.environ.get "BOT_ENV" "development"))
 
 #@(dataclass (defclass AlgoBotSettings []
     (setv ^str redis-host None)
