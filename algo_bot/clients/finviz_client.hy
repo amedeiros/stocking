@@ -30,5 +30,5 @@
 (defn finviz-get-news [stock]
     (setv news (finviz.get_news stock))
     (setv table (pd.DataFrame news))
-    (setv table.columns ["Title" "Link"])
+    (setv table.columns ["Date" "Title" "Link" "Source"])
     table)

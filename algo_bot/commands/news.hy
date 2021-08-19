@@ -11,16 +11,17 @@
 
 
 (with-decorator (respond-to "^interest-over-time (.*)" re.IGNORECASE)
-    (defn interest-over-time [message ticker]
+    (defn interest-over-time [message kws]
         (utils.processing message)
-        (setv interest (trends.interest-over-time ticker))
+        (setv kw-list (kws.split ","))
+        (setv interest (trends.interest-over-time kw-list))
         (setv df (pd.DataFrame interest))
         (setv fig (charting.line-chart-trends df))
-        (setv filename f"{ticker}_interest_over_time.html")
+        (setv filename (+ (.join "_" (kws.split ",")) "_interest_over_time.html"))
         (utils.store-graph fig filename)
         (utils.send-webapi message
                             ""
-                            :title f"Interest Over Time: {ticker}"
+                            :title f"Interest Over Time: {kws}"
                             :title-link (utils.html-url filename))))
 
 (defn get-news-urls [ticker]
