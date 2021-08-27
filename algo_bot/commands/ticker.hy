@@ -22,8 +22,8 @@
         (setv df (alpha-vantage-client.company-overview ticker))
         (setv filename f"{ticker}_overview.html")
         (utils.store-html (df.to-html :classes "table table-striped") filename)
-        (utils.send-webapi 
-            message 
+        (utils.send-webapi
+            message
             :text (get (get df "Description") 0)
             :title "Overview for {ticker}"
             :title-link (utils.html-url filename))))

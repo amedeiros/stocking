@@ -26,6 +26,9 @@
 (defn time-series-intraday [symbol &optional [interval "60min"] [outputsize "full"]]
     (first (TIME_SERIES.get_intraday :symbol symbol :outputsize outputsize :interval interval)))
 
+(defn adjusted [symbol &optional [outputsize "full"]]
+    (first (TIME_SERIES.get_daily_adjusted :symbol symbol :outputsize outputsize)))
+
 (with-decorator (cache-memoize "sma")
                 (with-backoff ValueError)
     (defn sma [symbol &optional [interval "daily"] [series-type "close"] [time-period "50"]]
