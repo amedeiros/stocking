@@ -84,6 +84,27 @@ def golden_cross(start, stop, df, sma_50, sma_200, ticker):
     return fig
 
 
+def predicted_price(start, stop, price, predicted_price, ticker):
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=price.loc[start:stop, :].index,
+            y=price.loc[start:stop, "close"],
+            name="price",
+        )
+    )
+    fig.add_trace(
+        go.Scatter(
+            x=predicted_price.loc[start:stop, :].index,
+            y=predicted_price.loc[start:stop, "yhat"],
+            name="predicted price",
+        )
+    )
+
+    fig.update_layout(title_text=ticker, xaxis_rangeslider_visible=True)
+    return fig
+
+
 def predicted_golden_cross(
     start,
     stop,
@@ -99,7 +120,7 @@ def predicted_golden_cross(
     fig.add_trace(
         go.Scatter(
             x=price.loc[start:stop, :].index,
-            y=price.loc[start:stop, "open"],
+            y=price.loc[start:stop, "close"],
             name="price",
         )
     )

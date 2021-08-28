@@ -11,5 +11,7 @@ RUN python -m pip install --upgrade pip
 
 COPY . .
 
+# Build requirements for facebook prophet
+RUN python -m pip install pystan==2.19.1.1 numpy==1.21.2
 # Install the rest of the requirements
 RUN python -m pip install -r requirements.txt -r requirements-dev.txt

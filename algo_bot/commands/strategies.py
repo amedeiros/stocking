@@ -1,7 +1,6 @@
 import argparse
 import re
 import time
-from datetime import datetime
 
 import numpy as np
 import pandas as pd
@@ -10,6 +9,7 @@ from slackbot.bot import respond_to
 from algo_bot import cache, charting, utils
 from algo_bot.clients import alpha_vantage_client as avc
 from algo_bot.db.models import Screener
+from prophet import Prophet
 
 RUN_STRATEGY_PARSER = argparse.ArgumentParser()
 RUN_STRATEGY_PARSER.add_argument("--screener-id", type=int, required=True)
@@ -18,6 +18,33 @@ RUN_STRATEGY_PARSER.add_argument("--screener-id", type=int, required=True)
 AREA = np.pi * 20
 
 MAX_RECORDS = 10
+
+
+@respond_to("^predict-price (.*)", re.IGNORECASE)
+def run_strategy_predict_price(message, ticker):
+    utils.processing(message)
+    results = avc.time_series_daily(ticker).reset_index()
+    df = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"date": "ds", "4. close": "y"})
+    price = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"4. close": "close"}).set_index(["date"])
+    m = Prophet(daily_seasonality=True)
+    m.fit(df)
+    future = m.make_future_dataframe(periods=365)
+    forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=False)
+    fig = charting.predicted_price(
+        start=utils.today(),
+        stop=utils.years_ago(),
+        price=price,
+        predicted_price=forecast,
+        ticker=ticker
+    )
+    filename = f"predicted_{ticker}.html"
+    utils.store_graph(fig, filename)
+    utils.send_webapi(
+        message,
+        "",
+        title=f"Predicted price for {ticker}",
+        title_link=utils.html_url(filename),
+    )
 
 
 @respond_to("^strategy-risk-vs-reward (.*)", re.IGNORECASE)
