@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
+from algo_bot import utils
 
 
 def candlestick_plot(df):
-    fig = go.Figure()
-    fig = go.Figure(
+    return go.Figure(
         data=[
             go.Candlestick(
                 x=list(df.index),
@@ -19,7 +19,6 @@ def candlestick_plot(df):
             ),
         ]
     )
-    return fig
 
 
 def line_chart_trends(df):
@@ -35,12 +34,9 @@ def line_chart_trends(df):
 
 
 def plot_sma(df):
-    fig = go.Figure(
+    return go.Figure(
         data=[go.Scatter(x=list(df.index), y=df["SMA"], name="SMA", mode="lines",)]
     )
-
-    return fig
-
 
 def sector_performance_chart(df):
     fig = go.Figure(
