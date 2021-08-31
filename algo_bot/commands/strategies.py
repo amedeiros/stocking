@@ -9,7 +9,8 @@ from slackbot.bot import respond_to
 from algo_bot import cache, charting, utils
 from algo_bot.clients import alpha_vantage_client as avc
 from algo_bot.db.models import Screener
-from prophet import Prophet
+# from prophet import Prophet
+from neuralprophet import NeuralProphet
 
 RUN_STRATEGY_PARSER = argparse.ArgumentParser()
 RUN_STRATEGY_PARSER.add_argument("--screener-id", type=int, required=True)
@@ -26,10 +27,10 @@ def run_strategy_predict_price(message, ticker):
     results = avc.time_series_daily(ticker).reset_index()
     df = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"date": "ds", "4. close": "y"})
     price = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"4. close": "close"}).set_index(["date"])
-    m = Prophet(daily_seasonality=True)
-    m.fit(df)
-    future = m.make_future_dataframe(periods=365)
-    forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=False)
+    m = NeuralProphet(daily_seasonality=True)
+    m.fit(df, freq="D")
+    future = m.make_future_dataframe(df, periods=365, n_historic_predictions=True)
+    forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=True).rename(columns={"yhat1": "yhat"})
     fig = charting.predicted_price(
         start=utils.today(),
         stop=utils.years_ago(),

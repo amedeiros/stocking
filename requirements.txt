@@ -2,6 +2,7 @@ requests==2.25.1
 finviz==1.4.2
 pystan==2.19.1.1
 numpy==1.21.2
+neuralprophet
 prophet==1.0.1
 plotly==4.14.3
 pandas==1.2.0
