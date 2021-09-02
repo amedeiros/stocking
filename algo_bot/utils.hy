@@ -117,6 +117,11 @@
         (datetime.now)
         "%Y-%m-%d"))
 
+(defn days-ago [&optional [days 1]]
+    (.strftime
+        (- (datetime.now) (relativedelta :days days))
+        "%Y-%m-%d"))
+
 ; Helper to generate different signed urls
 (defn url-builder [type]
     (fn [name &optional [bucket "stocks-am"]]

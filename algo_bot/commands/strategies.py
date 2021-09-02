@@ -1,7 +1,8 @@
 import argparse
 import re
 import time
-
+from datetime import timedelta, datetime
+from dateutil.relativedelta import relativedelta
 import numpy as np
 import pandas as pd
 from slackbot.bot import respond_to
@@ -24,26 +25,44 @@ MAX_RECORDS = 10
 def run_strategy_predict_price(message, ticker):
     utils.processing(message)
     results = avc.time_series_daily(ticker).reset_index()
-    df = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"date": "ds", "4. close": "y"})
-    price = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"4. close": "close"}).set_index(["date"])
-    m = Prophet(daily_seasonality=True)
-    m.fit(df)
-    future = m.make_future_dataframe(periods=365)
-    forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=False)
-    fig = charting.predicted_price(
-        start=utils.today(),
-        stop=utils.years_ago(),
-        price=price,
-        predicted_price=forecast,
-        ticker=ticker
-    )
-    filename = f"predicted_{ticker}.html"
-    utils.store_graph(fig, filename)
+    df = results[["date", "4. close"]].rename(columns={"date": "ds", "4. close": "y"})
+    cuttoff = utils.days_ago(60)
+
+    history_df = df[ df['ds'] <= cuttoff ]
+    actuals_df = df[ df['ds'] > cuttoff ]
+
+    m = Prophet(growth='logistic')
+    m.add_country_holidays(country_name='US')
+    cap = history_df["y"].max() # Take the cap from the history
+    floor = history_df["y"].min() # Take the lowest value of close as the floor
+    history_df['cap'] = cap
+    history_df['floor'] = floor
+    m.fit(history_df)
+    future_df = m.make_future_dataframe(periods=60, freq='d', include_history=True)
+    future_df['cap'] = cap
+    future_df['floor'] = floor
+    future_df = future_df[ future_df['ds'].isin( df['ds'] ) ]
+    forecast_df = m.predict(future_df)#.set_index(["ds"]).sort_values(by="ds", ascending=False)
+
+    fig = m.plot(forecast_df)
+    ax = fig.gca()
+    ax.plot(actuals_df["ds"], actuals_df["y"], 'k.', color = "r")
+    ax.set_xlim([datetime.now() - relativedelta(years=1), datetime.now()])
+
+    # fig = charting.predicted_price(
+    #     start=utils.today(),
+    #     stop=utils.years_ago(),
+    #     price=price,
+    #     predicted_price=forecast_df,
+    #     ticker=ticker
+    # )
+    filename = f"predicted_{ticker}.png"
+    utils.store_pyplat_graph(fig, filename)
     utils.send_webapi(
         message,
         "",
         title=f"Predicted price for {ticker}",
-        title_link=utils.html_url(filename),
+        title_link=utils.image_url(filename),
     )
 
 

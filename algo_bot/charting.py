@@ -91,8 +91,8 @@ def predicted_price(start, stop, price, predicted_price, ticker):
     )
     fig.add_trace(
         go.Scatter(
-            x=predicted_price.loc[start:stop, :].index,
-            y=predicted_price.loc[start:stop, "yhat"],
+            x=predicted_price.loc[utils.years_from_now():start, :].index,
+            y=predicted_price.loc[utils.years_from_now():start, "yhat"],
             name="predicted price",
         )
     )
