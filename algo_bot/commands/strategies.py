@@ -4,6 +4,7 @@ import time
 
 import numpy as np
 import pandas as pd
+from datetime import datetime
 from slackbot.bot import respond_to
 
 from algo_bot import cache, charting, utils
@@ -25,14 +26,17 @@ def run_strategy_predict_price(message, ticker):
     utils.processing(message)
     results = avc.time_series_daily(ticker).reset_index()
     df = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"date": "ds", "4. close": "y"})
+    df['cap'] = df["y"].max()
     price = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"4. close": "close"}).set_index(["date"])
-    m = Prophet(daily_seasonality=True)
-    m.fit(df)
-    future = m.make_future_dataframe(periods=365)
+    m = Prophet(daily_seasonality=True, growth='logistic', mcmc_samples=300)
+    m.fit(df, control={'max_treedepth': 10})
+    future = m.make_future_dataframe(periods=365, freq='d')
+    future['cap'] = df["y"].max()
     forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=False)
     fig = charting.predicted_price(
         start=utils.today(),
         stop=utils.years_ago(),
+        predict_start=utils.years_from_now(),
         price=price,
         predicted_price=forecast,
         ticker=ticker
@@ -140,10 +144,10 @@ def _turtle(screener):
         # Calculate when the golden cross happened.
         # Calcuate are we above the golden cross still.
         golden_cross_days = sma_50[sma_50["SMA"] > sma_200["SMA"]]
-        # above_cross = golden_cross_days.loc[golden_cross_days.idxmax()]
+        above_cross = golden_cross_days.loc[golden_cross_days.idxmax()]
         first_cross = golden_cross_days.loc[golden_cross_days.idxmin()]
         first_cross_date = first_cross.idxmax()[0]
-        # most_recent_above_date = above_cross.idxmax()[0]
+        most_recent_above_date = above_cross.idxmax()[0]
         first_cross_close = daily.loc[first_cross_date]["4. close"]
 
         # Find the highest close price in the last 55 days
@@ -151,11 +155,12 @@ def _turtle(screener):
         max_row = daily.loc[daily["4. close"].idxmax()]
 
         # Buy if the cross has happend before today and the sma 50 is still above sma 200
-        # buy = (
-        #     first_cross_date <= datetime.utcnow()
-        #     and datetime.utcnow() >= most_recent_above_date
-        # )
-        buy = current_price >= first_cross_close
+        buy = (
+            first_cross_date <= datetime.utcnow()
+            and datetime.utcnow() >= most_recent_above_date
+            and sma_50["SMA"][0] > sma_200["SMA"][0]
+        )
+        # buy = current_price >= first_cross_close
         records.append(
             {
                 "ticker": ticker,
