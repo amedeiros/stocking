@@ -34,6 +34,9 @@ def new_watchlist(message, params):
 def list_watchlists(message):
     user = message.user["db_user"]
     watchlists = user.watchlists
+    if len(watchlists) == 0:
+        utils.reply_webapi(message, "You have no watchlists.")
+        return
     df = pd.DataFrame(data=list(map(lambda x: x.to_dict(), watchlists))).set_index("id")
     utils.reply_webapi(message, utils.wrap_ticks_tabulate(df))
 

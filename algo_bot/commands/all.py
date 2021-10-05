@@ -9,4 +9,5 @@ from algo_bot.commands import (
     ticker,
     user,
     watchlist,
+    simulation,
 )
