@@ -13,7 +13,8 @@ from algo_bot.db.models import Screener
 from prophet import Prophet
 
 RUN_STRATEGY_PARSER = argparse.ArgumentParser()
-RUN_STRATEGY_PARSER.add_argument("--screener-id", type=int, required=True)
+RUN_STRATEGY_PARSER.add_argument("--screener-id", type=int, required=False)
+RUN_STRATEGY_PARSER.add_argument("--ticker", type=str, required=False)
 
 # Scatter plot of expected return of the stocks vs. their standard deviations of daily retunrs
 AREA = np.pi * 20
@@ -26,12 +27,12 @@ def run_strategy_predict_price(message, ticker):
     utils.processing(message)
     results = avc.time_series_daily(ticker).reset_index()
     df = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"date": "ds", "4. close": "y"})
-    df['cap'] = df["y"].max()
+    # df['cap'] = df["y"].max()
     price = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"4. close": "close"}).set_index(["date"])
-    m = Prophet(daily_seasonality=True, growth='logistic', mcmc_samples=300)
+    m = Prophet(mcmc_samples=300)
     m.fit(df, control={'max_treedepth': 10})
-    future = m.make_future_dataframe(periods=365, freq='d')
-    future['cap'] = df["y"].max()
+    future = m.make_future_dataframe(periods=365, freq='d', include_history = True)
+    # future['cap'] = df["y"].max()
     forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=False)
     fig = charting.predicted_price(
         start=utils.today(),
@@ -56,31 +57,50 @@ def run_strategy_predict_price(message, ticker):
 @utils.parse_params(parser=RUN_STRATEGY_PARSER)
 def run_strategy_risk_vs_reward(message, params):
     user = message.user["db_user"]
-    screener = Screener.find(params.screener_id)
+    if params.screener_id:
+        screener = Screener.find(params.screener_id)
 
-    if screener and screener.user == user:
-        results = screener.run().head(MAX_RECORDS)
-        tickers = list(results["Ticker"])
-        data = {}
-        for ticker in tickers:
-            # Grab the close
-            data[ticker] = avc.time_series_daily(ticker)["4. close"]
+        if screener and screener.user == user:
+            results = screener.run().head(MAX_RECORDS)
+            tickers = list(results["Ticker"])
+            data = {}
+            for ticker in tickers:
+                # Grab the close
+                data[ticker] = avc.time_series_daily(ticker)["4. close"]
 
-        # Create the DataFrame sorting by date and droping rows with None values.
+            # Create the DataFrame sorting by date and droping rows with None values.
+            df = pd.DataFrame(data=data).sort_values(by="date", ascending=False).dropna()
+            fig = charting.risk_vs_return(df, AREA)
+            filename = f"{screener.name.replace(' ', '_')}_risk_vs_return.png"
+            utils.store_pyplat_graph(fig, filename)
+            utils.send_webapi(
+                message,
+                "",
+                title=f"Results for risk vs reward using screener: {screener.name}",
+                title_link=utils.image_url(filename),
+            )
+        else:
+            utils.reply_webapi(
+                message, "Error: Screener not found or does not belong to you!"
+            )
+    elif params.ticker:
+        data = { }
+        ticker = params.ticker
+        data[ticker] = avc.time_series_daily(ticker)["4. close"]
         df = pd.DataFrame(data=data).sort_values(by="date", ascending=False).dropna()
         fig = charting.risk_vs_return(df, AREA)
-        filename = f"{screener.name.replace(' ', '_')}_risk_vs_return.png"
+        filename = f"{ticker}_risk_vs_return.png"
         utils.store_pyplat_graph(fig, filename)
         utils.send_webapi(
             message,
             "",
-            title=f"Results for risk vs reward using screener: {screener.name}",
+            title=f"Results for risk vs reward using ticker: {ticker}",
             title_link=utils.image_url(filename),
         )
     else:
         utils.reply_webapi(
-            message, "Error: Screener not found or does not belong to you!"
-        )
+                message, "Error: Requires either --screener-id or --ticker"
+            )
 
 
 @respond_to("^strategy-turtle (.*)")

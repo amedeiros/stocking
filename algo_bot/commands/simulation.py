@@ -19,7 +19,7 @@ COLUMN_RENAME = {"date": "Date", "1. open": "Open", "2. high": "High", "3. low":
 def run_turtle_simulation(message, params):
     dailyAdjustedRaw = avc.adjusted(params.ticker)
     df = dailyAdjustedRaw.sort_values(by="date", ascending=False).reset_index().rename(columns=COLUMN_RENAME).drop(["7. dividend amount", "8. split coefficient"], axis=1, inplace=False)
-    df = df.head(20).sort_values(by="Date", ascending=True).reset_index().drop(["index"], axis=1, inplace=False)
+    df = df.head(90).sort_values(by="Date", ascending=True).reset_index().drop(["index"], axis=1, inplace=False)
     signals = turtleSignals(df)
     messages, states_buy, states_sell, total_gains, invest = turtle_buy_stock(df.Close, signals['signal'], df, initial_money=params.balance, max_buy=params.limit, max_sell=params.limit)
     # Reply the simulation
