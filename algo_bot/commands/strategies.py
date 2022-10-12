@@ -1,6 +1,5 @@
 import argparse
 import re
-import time
 
 import numpy as np
 import pandas as pd
@@ -10,7 +9,7 @@ from slackbot.bot import respond_to
 from algo_bot import cache, charting, utils
 from algo_bot.clients import alpha_vantage_client as avc
 from algo_bot.db.models import Screener
-from prophet import Prophet
+from neuralprophet import NeuralProphet
 
 RUN_STRATEGY_PARSER = argparse.ArgumentParser()
 RUN_STRATEGY_PARSER.add_argument("--screener-id", type=int, required=False)
@@ -29,11 +28,10 @@ def run_strategy_predict_price(message, ticker):
     df = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"date": "ds", "4. close": "y"})
     # df['cap'] = df["y"].max()
     price = pd.DataFrame(data=results.loc[:, ["date", "4. close"]]).rename(columns={"4. close": "close"}).set_index(["date"])
-    m = Prophet(mcmc_samples=300)
-    m.fit(df, control={'max_treedepth': 10})
-    future = m.make_future_dataframe(periods=365, freq='d', include_history = True)
-    # future['cap'] = df["y"].max()
-    forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=False)
+    m = NeuralProphet(daily_seasonality=True)
+    m.fit(df, freq="D")
+    future = m.make_future_dataframe(df, periods=365, n_historic_predictions=True)
+    forecast = m.predict(future).set_index(["ds"]).sort_values(by="ds", ascending=True).rename(columns={"yhat1": "yhat"})
     fig = charting.predicted_price(
         start=utils.today(),
         stop=utils.years_ago(),
@@ -84,7 +82,7 @@ def run_strategy_risk_vs_reward(message, params):
                 message, "Error: Screener not found or does not belong to you!"
             )
     elif params.ticker:
-        data = { }
+        data = {}
         ticker = params.ticker
         data[ticker] = avc.time_series_daily(ticker)["4. close"]
         df = pd.DataFrame(data=data).sort_values(by="date", ascending=False).dropna()
@@ -99,8 +97,8 @@ def run_strategy_risk_vs_reward(message, params):
         )
     else:
         utils.reply_webapi(
-                message, "Error: Requires either --screener-id or --ticker"
-            )
+            message, "Error: Requires either --screener-id or --ticker"
+        )
 
 
 @respond_to("^strategy-turtle (.*)")
@@ -197,14 +195,3 @@ def _turtle(screener):
     df = pd.DataFrame(records)
 
     return df
-
-
-def _retry(callable):
-    while True:
-        try:
-            callable()
-        except ValueError as exc:
-            print(exc)
-            time.sleep(60)
-        else:
-            break
