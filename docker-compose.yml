@@ -10,7 +10,6 @@ services:
     depends_on:
       - db
       - redis
-      # - workers
   bot:
     <<: *dev
     command: ["hy", "./algo_bot/run.hy"]
@@ -32,21 +31,6 @@ services:
     restart: always
     ports:
       - 8080:8080
-  # worker-ui:
-  #   <<: *dev
-  #   command: ["flower","-A", "algo_bot.worker.app", "-l", "info", "--address=0.0.0.0", "--broker=redis://redis:6379/0", "--broker_api=redis://redis:6379/0"]
-  #   depends_on:
-  #     - redis
-  #     - db
-  #   ports:
-  #     - 5555:5555
-  # workers:
-  #   <<: *dev
-  #   command: ["celery", "-A", "algo_bot.worker.app", "worker", "-E", "-B", "-l", "INFO"]
-  #   depends_on:
-  #     - redis
-  #     - db
-  #     - worker-ui
   redis:
     image: "redis"
     ports:
