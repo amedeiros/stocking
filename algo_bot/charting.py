@@ -38,6 +38,7 @@ def plot_sma(df):
         data=[go.Scatter(x=list(df.index), y=df["SMA"], name="SMA", mode="lines",)]
     )
 
+
 def sector_performance_chart(df):
     fig = go.Figure(
         data=[go.Bar(x=list(df.index), y=df["Rank A: Real-Time Performance"])]
@@ -80,7 +81,7 @@ def golden_cross(start, stop, df, sma_50, sma_200, ticker):
     return fig
 
 
-def predicted_price(start, stop, price, predicted_price, ticker):
+def predicted_price(start, stop, price, predict_start, predicted_price, ticker):
     fig = go.Figure()
     fig.add_trace(
         go.Scatter(
@@ -91,8 +92,8 @@ def predicted_price(start, stop, price, predicted_price, ticker):
     )
     fig.add_trace(
         go.Scatter(
-            x=predicted_price.loc[start:stop, :].index,
-            y=predicted_price.loc[start:stop, "yhat"],
+            x=predicted_price.loc[predict_start:stop, :].index,
+            y=predicted_price.loc[predict_start:stop, "yhat"],
             name="predicted price",
         )
     )

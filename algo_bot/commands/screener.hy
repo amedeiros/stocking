@@ -4,6 +4,7 @@
 (import [sqlalchemy.exc [IntegrityError]])
 (import [algo-bot [utils]])
 (import [algo-bot.db.models [Screener]])
+(import [finviz.helper_functions.error_handling [NoResults]])
 
 (setv SCREENER_PARSER (argparse.ArgumentParser))
 (SCREENER_PARSER.add-argument "--name" :type str :required True)
@@ -39,13 +40,16 @@
         (setv screener (.first (Screener.where :id id :user_id user.id)))
         (if screener
             (do
-                (setv df (screener.run))
-                (setv filename (+ (screener.name.replace " " "_") "_screener.html"))
-                (utils.store-html (df.to-html :classes "table table-striped") filename)
-                (utils.send-webapi
-                    message
-                    ""
-                    :title f"Screener Results: {screener.name}"
-                    :title-link (utils.html-url filename)))
+                (try
+                    (setv df (screener.run))
+                    (setv filename (+ (screener.name.replace " " "_") "_screener.html"))
+                    (utils.store-html (df.to-html :classes "table table-striped") filename)
+                    (utils.send-webapi
+                        message
+                        ""
+                        :title f"Screener Results: {screener.name}"
+                        :title-link (utils.html-url filename))
+                    (except [NoResults]
+                        (utils.reply-webapi message f"No results for sceener: {screener.name}"))))
             ; Else report missing screener
             (utils.reply-webapi message f"Error: No Screener with ID {id}"))))        

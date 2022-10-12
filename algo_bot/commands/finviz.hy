@@ -78,12 +78,15 @@
 
 (with-decorator (respond-to "ticker-insider (.*)")
     (defn ticker-insider [message ticker]
-        (utils.processing message)
-        (setv df (pd.DataFrame (finviz-client.finviz-get-insider ticker)))
-        (setv filename f"{ticker}_insider.html")
-        (utils.store-html (df.to-html :classes "table table-striped") filename)
-        (utils.send-webapi
-            message
-            ""
-            :title f"insider for {ticker}"
-            :title-link (utils.html-url filename))))
+        (try
+            (utils.processing message)
+            (setv df (pd.DataFrame (finviz-client.finviz-get-insider ticker)))
+            (setv filename f"{ticker}_insider.html")
+            (utils.store-html (df.to-html :classes "table table-striped") filename)
+            (utils.send-webapi
+                message
+                ""
+                :title f"insider for {ticker}"
+                :title-link (utils.html-url filename))
+            (except [IndexError]
+                (utils.reply-webapi message f"No insider information for ticker {ticker}")))))
