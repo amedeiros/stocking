@@ -1,8 +1,8 @@
 (import re)
-(import [pandas :as pd])
-(import [slackbot.bot [respond-to]])
-(import [algo-bot [utils]])
-(import [algo-bot.clients [finviz-client]])
+(import pandas :as pd)
+(import slackbot.bot [respond-to])
+(import algo-bot [utils])
+(import algo-bot.clients [finviz-client])
 
 (with-decorator (respond-to "^screener (.*)" re.IGNORECASE)
     (defn screener [message filters]

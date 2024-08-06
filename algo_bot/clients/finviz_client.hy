@@ -1,22 +1,20 @@
 (import asyncio nest_asyncio finviz)
-(import [algo-bot.utils [event-loop]])
-(import [pandas :as pd])
-(import [finviz.screener [Screener]])
+(import algo-bot.utils [event-loop])
+(import pandas :as pd)
+(import finviz.screener [Screener])
 
 
-(with-decorator event-loop
-    (defn screener [&optional [filters ["exch_nasd" "sh_avgvol_o200" "sh_price_u5" "ta_change_u10" "geo_usa"]] [order "-volume"]]
-        (setv stock-list (Screener :filters filters :order order))
-        (setv df (pd.DataFrame stock-list.data))
-        (df.set_index "Ticker" :drop False)
-        df))
+(defn [event-loop] screener [&optional [filters ["exch_nasd" "sh_avgvol_o200" "sh_price_u5" "ta_change_u10" "geo_usa"]] [order "-volume"]]
+    (setv stock-list (Screener :filters filters :order order))
+    (setv df (pd.DataFrame stock-list.data))
+    (df.set_index "Ticker" :drop False)
+    df)
 
 ; Finviz table function generator
 (defn finviz-table [table]
-    (with-decorator event-loop
-        (fn [ticker]
-            (setv s (Screener :table table :tickers [ticker]))
-            (pd.DataFrame s.data))))
+    (fn [event-loop] [ticker]
+        (setv s (Screener :table table :tickers [ticker]))
+        (pd.DataFrame s.data)))
 
 (setv finviz-performance (finviz-table "Performance"))
 (setv finviz-overview (finviz-table "Overview"))

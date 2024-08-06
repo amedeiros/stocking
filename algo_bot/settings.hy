@@ -1,16 +1,16 @@
 (import os)
-(import [dataclasses [dataclass]])
+(import dataclasses [dataclass])
 
 (setv env (os.environ.get "BOT_ENV" "development"))
 
-#@(dataclass (defclass AlgoBotSettings []
-    (setv ^str redis-host None)
-    (setv ^int redis-port None)
-    (setv ^str db-host None)
-    (setv ^str db-name None)
-    (setv ^str db-password None)
-    (setv ^str db-username None)
-    (setv ^str bot-env None)))
+(defclass [dataclass] AlgoBotSettings []
+    (setv #^ str redis-host None)
+    (setv #^ int redis-port None)
+    (setv #^ str db-host None)
+    (setv #^ str db-name None)
+    (setv #^ str db-password None)
+    (setv #^ str db-username None)
+    (setv #^ str bot-env None))
 
 (defn _dev_settings []
     (AlgoBotSettings
@@ -25,5 +25,8 @@
 (defn _test_settings [] (_dev_settings))
 
 (defn get-settings []
-    (if (= env "development") (_dev_settings)
-        (= env "testing") (_test_settings)))
+    (cond
+        (= env "development")
+            (_dev_settings)
+        (= env "testing")
+            (_test_settings)))

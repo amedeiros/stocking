@@ -6,17 +6,14 @@ warnings.filterwarnings("ignore")
 import gzip
 import shutil
 from collections import Counter, defaultdict, namedtuple
-from datetime import timedelta
 from pathlib import Path
 from struct import unpack
 from time import time
 from urllib.parse import urljoin
 from urllib.request import urlretrieve
 
-import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-from matplotlib.ticker import FuncFormatter
 
 sns.set_style("whitegrid")
 

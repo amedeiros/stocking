@@ -10,4 +10,3 @@ templates/*.html
 celerybeat-schedule
 .dbdata/*
 *.log
-

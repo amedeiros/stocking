@@ -1,4 +1,4 @@
-(import [pytrends.request [TrendReq]])
+(import pytrends.request [TrendReq])
 
 (defn interest-over-time [kw-list]
     (do

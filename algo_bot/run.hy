@@ -1,5 +1,5 @@
 (import atexit)
-(import [slackbot.bot [Bot]])
+(import slackbot.bot [Bot])
 
 (setv bot (Bot))
 (setv bot._client.icon_emoji ":robot_face:")

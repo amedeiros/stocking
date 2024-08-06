@@ -1,7 +1,7 @@
 (import re)
-(import [slackbot.bot [respond-to]])
-(import [algo-bot [utils]])
-(import [algo-bot.slackbot-settings [BOT_ENV]])
+(import slackbot.bot [respond-to])
+(import algo-bot [utils])
+(import algo-bot.slackbot-settings [BOT_ENV])
 
 (defn _respond [message response]
  (utils.reply-webapi message (utils.wrap-ticks response)))

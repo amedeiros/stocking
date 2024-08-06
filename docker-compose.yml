@@ -1,21 +1,17 @@
 version: '3'
 services:
-  dev: &dev
+  bot:
     build: .
     image: amedeiros/algo-bot-dev
-    command: ["bash"]
+    command: [ "hy", "./algo_bot/run.hy" ]
     env_file: bot-variables.env
     volumes:
       - .:/usr/src/app
     depends_on:
       - db
       - redis
-      # - workers
-  bot:
-    <<: *dev
-    command: ["hy", "./algo_bot/run.hy"]
   db:
-    image: mysql
+    image: mysql:latest
     command: --default-authentication-plugin=mysql_native_password
     restart: always
     environment:
@@ -28,35 +24,15 @@ services:
     ports:
       - 3306:3306
   adminer:
-    image: adminer
+    image: adminer:latest
     restart: always
     ports:
       - 8080:8080
-  # worker-ui:
-  #   <<: *dev
-  #   command: ["flower","-A", "algo_bot.worker.app", "-l", "info", "--address=0.0.0.0", "--broker=redis://redis:6379/0", "--broker_api=redis://redis:6379/0"]
-  #   depends_on:
-  #     - redis
-  #     - db
-  #   ports:
-  #     - 5555:5555
-  # workers:
-  #   <<: *dev
-  #   command: ["celery", "-A", "algo_bot.worker.app", "worker", "-E", "-B", "-l", "INFO"]
-  #   depends_on:
-  #     - redis
-  #     - db
-  #     - worker-ui
   redis:
-    image: "redis"
+    image: redis:latest
     ports:
       - 6379:6379
     volumes:
       - cache:/data
-  lock-requirements:
-    <<: *dev
-    depends_on: []
-    entrypoint: "/bin/bash"
-    command: "lock-requirements.sh"
 volumes:
   cache:

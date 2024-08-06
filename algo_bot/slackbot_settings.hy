@@ -1,6 +1,6 @@
-(import [algo_bot.settings [AlgoBotSettings get_settings]])
+(import algo_bot.settings [AlgoBotSettings get_settings])
 
-(setv ^AlgoBotSettings settings (get_settings))
+(setv ^# AlgoBotSettings settings (get_settings))
 
 (setv DEFAULT_REPLY "Sorry but I didn't understand you")
 (setv BOT_EMOJI ":robot_face:")

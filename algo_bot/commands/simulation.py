@@ -21,7 +21,7 @@ def run_turtle_simulation(message, params):
     df = dailyAdjustedRaw.sort_values(by="date", ascending=False).reset_index().rename(columns=COLUMN_RENAME).drop(["7. dividend amount", "8. split coefficient"], axis=1, inplace=False)
     df = df.head(20).sort_values(by="Date", ascending=True).reset_index().drop(["index"], axis=1, inplace=False)
     signals = turtleSignals(df)
-    messages, states_buy, states_sell, total_gains, invest = turtle_buy_stock(df.Close, signals['signal'], df, initial_money=params.balance, max_buy=params.limit, max_sell=params.limit)
+    messages, states_buy, states_sell, total_gains, invest = buy_stock(df.Close, signals['signal'], df, initial_money=params.balance, max_buy=params.limit, max_sell=params.limit)
     # Reply the simulation
     utils.reply_webapi(message, utils.wrap_ticks("\n".join(messages)))
     # Send the chart
@@ -49,7 +49,7 @@ def run_moving_average_simulation(message, params):
     df = dailyAdjustedRaw.sort_values(by="date", ascending=False).reset_index().rename(columns=COLUMN_RENAME).drop(["7. dividend amount", "8. split coefficient"], axis=1, inplace=False)
     df = df.head(90).sort_values(by="Date", ascending=True).reset_index().drop(["index"], axis=1, inplace=False)
     signals = movingAverageSignals(df)
-    messages, states_buy, states_sell, total_gains, invest = moving_average_buy_stock(df.Close, signals['positions'], df, initial_money=params.balance, max_buy=params.limit, max_sell=params.limit)
+    messages, states_buy, states_sell, total_gains, invest = buy_stock(df.Close, signals['positions'], df, initial_money=params.balance, max_buy=params.limit, max_sell=params.limit)
     # Reply the simulation
     utils.reply_webapi(message, utils.wrap_ticks("\n".join(messages)))
     # Send the chart
@@ -75,10 +75,8 @@ def movingAverageSignals(df):
     long_window = int(0.05 * len(df))
     signals = pd.DataFrame(index=df.index)
     signals['signal'] = 0.0
-
     signals['short_ma'] = df['Close'].rolling(window=short_window, min_periods=1, center=False).mean()
     signals['long_ma'] = df['Close'].rolling(window=long_window, min_periods=1, center=False).mean()
-
     signals['signal'][short_window:] = np.where(signals['short_ma'][short_window:]
                                                 > signals['long_ma'][short_window:], 1.0, 0.0)
     signals['positions'] = signals['signal'].diff()
@@ -86,7 +84,19 @@ def movingAverageSignals(df):
     return signals
 
 
-def moving_average_buy_stock(
+def turtleSignals(df):
+    count = int(np.ceil(len(df) * 0.1))
+    signals = pd.DataFrame(index=df.index)
+    signals['signal'] = 0.0
+    signals['trend'] = df['Close']
+    signals['RollingMax'] = (signals.trend.shift(1).rolling(count).max())
+    signals['RollingMin'] = (signals.trend.shift(1).rolling(count).min())
+    signals.loc[signals['RollingMax'] < signals.trend, 'signal'] = -1
+    signals.loc[signals['RollingMin'] > signals.trend, 'signal'] = 1
+    return signals
+
+
+def buy_stock(
     real_movement,
     signal,
     df,
@@ -159,97 +169,6 @@ def moving_average_buy_stock(
                     % (df.Date[i], i, sell_units, total_sell, invest, initial_money)
                 )
             states_sell.append(i)
-    invest = ((initial_money - starting_money) / starting_money) * 100
-    total_gains = initial_money - starting_money
-    return messages, states_buy, states_sell, total_gains, invest
-
-
-def turtleSignals(df):
-    count = int(np.ceil(len(df) * 0.1))
-    signals = pd.DataFrame(index=df.index)
-    signals['signal'] = 0.0
-    signals['trend'] = df['Close']
-    signals['RollingMax'] = (signals.trend.shift(1).rolling(count).max())
-    signals['RollingMin'] = (signals.trend.shift(1).rolling(count).min())
-    signals.loc[signals['RollingMax'] < signals.trend, 'signal'] = -1
-    signals.loc[signals['RollingMin'] > signals.trend, 'signal'] = 1
-    return signals
-
-
-def turtle_buy_stock(
-    real_movement,
-    signal,
-    df,
-    initial_money=10000,
-    max_buy=1,
-    max_sell=1,
-):
-    """
-    real_movement = actual movement in the real world
-    delay = how much interval you want to delay to change our decision from buy to sell, vice versa
-    initial_state = 1 is buy, 0 is sell
-    initial_money = 1000, ignore what kind of currency
-    max_buy = max quantity for share to buy
-    max_sell = max quantity for share to sell
-    """
-    starting_money = initial_money
-    states_sell = []
-    states_buy = []
-    current_inventory = 0
-    messages = []
-
-    def buy(i, initial_money, current_inventory):
-        shares = initial_money // real_movement[i]
-        if shares < 1:
-            messages.append(
-                'DATE: %s day %d: total balances %f, not enough money to buy a unit price %f'
-                % (df.Date[i], i, initial_money, real_movement[i])
-            )
-        else:
-            if shares > max_buy:
-                buy_units = max_buy
-            else:
-                buy_units = shares
-            initial_money -= buy_units * real_movement[i]
-            current_inventory += buy_units
-            messages.append(
-                'DATE: %s day %d: buy %d units at price %f, total balance %f'
-                % (df.Date[i], i, buy_units, buy_units * real_movement[i], initial_money)
-            )
-            states_buy.append(0)
-        return initial_money, current_inventory
-
-    for i in range(real_movement.shape[0] - int(0.025 * len(df))):
-        state = signal[i]
-        if state == 1:
-            initial_money, current_inventory = buy(
-                i, initial_money, current_inventory
-            )
-            states_buy.append(i)
-        elif state == -1:
-            if current_inventory == 0:
-                messages.append('DATE: %s day %d: cannot sell anything, inventory 0' % (df.Date[i], i))
-            else:
-                if current_inventory > max_sell:
-                    sell_units = max_sell
-                else:
-                    sell_units = current_inventory
-                current_inventory -= sell_units
-                total_sell = sell_units * real_movement[i]
-                initial_money += total_sell
-                try:
-                    invest = (
-                        (real_movement[i] - real_movement[states_buy[-1]])
-                        / real_movement[states_buy[-1]]
-                    ) * 100
-                except:
-                    invest = 0
-                messages.append(
-                    'DATE: %s day %d, sell %d units at price %f, investment %f %%, total balance %f,'
-                    % (df.Date[i], i, sell_units, total_sell, invest, initial_money)
-                )
-            states_sell.append(i)
-
     invest = ((initial_money - starting_money) / starting_money) * 100
     total_gains = initial_money - starting_money
     return messages, states_buy, states_sell, total_gains, invest

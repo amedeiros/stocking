@@ -1,41 +1,40 @@
 (import asyncio nest_asyncio)
 (import json time os shlex)
 (import boto3 plotly)
-(import [dataclasses [dataclass]])
-(import [datetime [datetime timedelta]])
-(import [dateutil.relativedelta [relativedelta]])
-(import [functools [wraps]])
-(import [pandas :as pd])
-(import [tabulate [tabulate]])
-(import [algo_bot.slackbot_settings [BOT_ENV]])
+(import dataclasses [dataclass])
+(import datetime [datetime timedelta])
+(import dateutil.relativedelta [relativedelta])
+(import functools [wraps])
+(import pandas :as pd)
+(import tabulate [tabulate])
+(import algo_bot.slackbot_settings [BOT_ENV])
 
 (nest_asyncio.apply)
 
 ; Positioning Helpers
 
-(with-decorator dataclass
-    (defclass Positioning []
-        (setv ^int position-size 0)
-        (setv ^float max-loss-per-share 0.0)
-        (setv ^float total-risk 0.0)
-        (setv ^float total-gain 0.0)
-        (setv ^float profit 0.0)
-        (setv ^float purchase-cost 0.0)
-        (setv ^float risk-reward-ratio 0.0)
+(defclass [dataclass] Positioning []
+    (setv #^ int position-size 0)
+    (setv #^ float max-loss-per-share 0.0)
+    (setv #^ float total-risk 0.0)
+    (setv #^ float total-gain 0.0)
+    (setv #^ float profit 0.0)
+    (setv #^ float purchase-cost 0.0)
+    (setv #^ float risk-reward-ratio 0.0)
 
-        (defn to-df [self]
-            (pd.DataFrame :data [(self.to_dict)]))
+    (defn to-df [self]
+        (pd.DataFrame :data [(self.to_dict)]))
 
-        (defn to-dict [self]
-            {
-                "position_size" self.position-size
-                "max_loss_per_share" self.max_loss_per_share
-                "total_risk" self.total_risk
-                "total_gain" self.total_gain
-                "profit" self.profit
-                "purchase_cost" self.purchase_cost
-                "risk_reward_ratio" self.risk_reward_ratio
-            })))
+    (defn to-dict [self]
+        {
+            "position_size" self.position-size
+            "max_loss_per_share" self.max_loss_per_share
+            "total_risk" self.total_risk
+            "total_gain" self.total_gain
+            "profit" self.profit
+            "purchase_cost" self.purchase_cost
+            "risk_reward_ratio" self.risk_reward_ratio
+        }))
 
 (defn position-sizing-long [risk price stop exit]
     (setv max-loss-per-share (- price stop))
@@ -159,13 +158,11 @@
                 (store-s3 filename name))
             (raise (RuntimeError f"Unknown environment {BOT_ENV}")))))
 
-(with-decorator graph-storage
-    (defn store-pyplat-graph [fig filename]
-        (fig.savefig filename)))
+(defn [graph-storage] store-pyplat-graph [fig filename]
+    (fig.savefig filename))
 
-(with-decorator graph-storage
-    (defn store-graph [fig filename]
-        (plotly.offline.plot fig :filename filename)))
+(defn [graph-storage] store-graph [fig filename]
+    (plotly.offline.plot fig :filename filename))
 
 ; Begin Decorators
 
@@ -176,12 +173,12 @@
             (setv params
                 (parser.parse-args (shlex.split (get args 1))))
             (setv args (+ (,(get args 0) params) (cut args 2)))
-            (func #*args #**kwargs))))
+            (func #* args #** kwargs))))
 
 ; Authentication decorator
 (defn auth [func]
     ; Circular import otherwise
-    (import [algo_bot.db.models [User]])
+    (import algo_bot.db.models [User])
     (fn [&rest args &kwargs kwargs]
         (setv message (get args 0))
         (processing message)
@@ -191,14 +188,14 @@
             (do
                 (assoc message.user "db_user" user)
                 (setv args (+ (, message) (cut args 1)))
-                (func #*args #**kwargs)))))
+                (func #* args #** kwargs)))))
 
 ; Decorator to create a new event loop and exit
 (defn event-loop [func]
     (fn [&rest args &kwargs kwargs]
         (setv loop (asyncio.new_event_loop))
         (asyncio.set_event_loop loop)
-        (setv result (func #*args #**kwargs))
+        (setv result (func #* args #** kwargs))
         (loop.close)
         result))
 
@@ -208,7 +205,7 @@
         (fn [&rest args &kwargs kwargs]
             (while True
                 (try
-                    (setv results (func #*args #**kwargs))
+                    (setv results (func #* args #** kwargs))
                     (break)
                     (except [exception]
                         (print "Backing off...")

@@ -1,5 +1,5 @@
-(import [algo_bot.settings [AlgoBotSettings get_settings]])
-(import [algo_bot [utils]])
+(import algo_bot.settings [AlgoBotSettings get_settings])
+(import algo_bot [utils])
 (import redis)
 (import pickle)
 
@@ -24,6 +24,6 @@
             ; Weird None check for dataframe not a problem in python with `data is not None` shurg.
             (if (= (type data) (type None))
                 (do
-                    (setv data (func #*args #**kwargs))
+                    (setv data (func #* args #** kwargs))
                     (write :key cache-key :value data)))
             data)))

@@ -103,7 +103,7 @@ def run_strategy_turtle(message, params):
         utils.send_webapi(
             message,
             text="",
-            title=f"Turtle Results",
+            title="Turtle Results",
             title_link=utils.html_url(filename),
         )
     else:
@@ -124,7 +124,7 @@ def _turtle(screener):
         try:
             current_price = float(row["Price"].max())
             current_volume = row["Volume"].max()
-        except KeyError as exc:
+        except KeyError:
             breakpoint()
 
         daily = None

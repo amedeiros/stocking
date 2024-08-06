@@ -1,6 +1,5 @@
 import matplotlib.pyplot as plt
 import plotly.graph_objects as go
-from algo_bot import utils
 
 
 def candlestick_plot(df):
